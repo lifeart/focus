@@ -393,6 +393,18 @@ export const fr: TranslationTable = {
   'recap.copy': 'Copier',
   'recap.copied': 'Copi\u00E9 !',
 
+  // Celebrations
+  'celebration.levelUp': 'Niveau sup\u00E9rieur !',
+  'celebration.newLevel': 'Niveau {level}',
+  'celebration.levelTitle': '{title}',
+  'celebration.unlockedTheme': 'Th\u00E8me d\u00E9bloqu\u00E9 : {theme}',
+  'celebration.unlockedAvatar': 'Nouveau style d\u2019avatar !',
+  'celebration.tapToDismiss': 'Appuyez pour continuer',
+  'celebration.badgeEarned': 'Badge obtenu !',
+  'celebration.badgeTier': 'Niveau {tier}',
+  'celebration.share': 'Partager',
+  'celebration.shareText': 'J\u2019ai obtenu le badge {badge} ({tier}) dans Focus !',
+
   // Language names
   'lang.ru': '\u0420\u0443\u0441\u0441\u043A\u0438\u0439',
   'lang.en': 'English',

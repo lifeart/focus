@@ -20,6 +20,7 @@ export const SESSION_RESULT_KEY = 'focus:last_exercise_result';
 export const SESSION_BONUS_KEY = 'focus:last_bonus_event';
 export const SESSION_MOOD_KEY = 'focus:session_mood';
 export const SESSION_POST_MOOD_KEY = 'focus:post_session_mood';
+export const SESSION_CELEBRATIONS_KEY = 'focus:celebrations';
 export const CURRENT_DATA_VERSION = 2;
 
 // ─── Streak freeze constants ────────────────────────────────────────

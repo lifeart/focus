@@ -999,6 +999,53 @@
   color: var(--text-secondary);
 }
 
+/* ── Celebration Overlay ── */
+.celebration-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: var(--z-toast);
+  animation: overlayFadeIn 300ms ease forwards;
+  cursor: pointer;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+}
+
+.celebration-overlay--dismiss {
+  animation: fadeOut 300ms ease forwards;
+}
+
+.celebration__icon { font-size: 4rem; animation: bounceIn 600ms ease forwards; }
+.celebration__level { font-size: 3rem; font-weight: 800; color: var(--text); animation: levelReveal 800ms ease 400ms both; }
+.celebration__title { font-size: 1.5rem; color: var(--primary); animation: fadeIn 400ms ease 600ms both; }
+.celebration__heading { font-size: 1.75rem; color: var(--text); animation: slideUp 400ms ease 200ms both; }
+.celebration__unlocks { animation: fadeIn 400ms ease 800ms both; color: var(--text-secondary); font-size: var(--text-sm); }
+
+.celebration__badge-icon { font-size: 5rem; animation: bounceIn 600ms ease forwards; }
+.celebration__badge-name { font-size: 1.25rem; font-weight: var(--weight-bold); color: var(--text); animation: slideUp 400ms ease 200ms both; }
+.celebration__badge-desc { font-size: var(--text-sm); color: var(--text-secondary); animation: fadeIn 400ms ease 600ms both; text-align: center; max-width: 280px; }
+.celebration__tier { font-size: var(--text-md); font-weight: var(--weight-bold); animation: fadeIn 400ms ease 400ms both; }
+.celebration__tier--bronze { color: #CD7F32; }
+.celebration__tier--silver { color: #C0C0C0; }
+.celebration__tier--gold  { color: #FFD700; animation: goldPulse 2s ease infinite; }
+
+.celebration__share-btn {
+  margin-top: var(--space-md);
+  animation: fadeIn 400ms ease 1s both;
+}
+
+.celebration__dismiss-hint {
+  position: absolute;
+  bottom: var(--space-xl);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  animation: fadeIn 400ms ease 1.5s both;
+}
+
 /* ── Confetti ── */
 .confetti-container {
   position: fixed;

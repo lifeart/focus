@@ -346,6 +346,18 @@ export interface TranslationTable {
   'recap.copy': string;
   'recap.copied': string;
 
+  // Celebrations
+  'celebration.levelUp': string;
+  'celebration.newLevel': string;
+  'celebration.levelTitle': string;
+  'celebration.unlockedTheme': string;
+  'celebration.unlockedAvatar': string;
+  'celebration.tapToDismiss': string;
+  'celebration.badgeEarned': string;
+  'celebration.badgeTier': string;
+  'celebration.share': string;
+  'celebration.shareText': string;
+
   // Language names (shown in language selector)
   'lang.ru': string;
   'lang.en': string;

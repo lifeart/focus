@@ -10,9 +10,11 @@ import { createVisualSearch } from '../../exercises/visual-search.js';
 import { createBreathing } from '../../exercises/breathing.js';
 import { createPomodoro } from '../../exercises/pomodoro.js';
 import { appState, getSoundManager } from '../../main.js';
-import { EXERCISE_CONFIGS, SESSION_RESULT_KEY, SESSION_BONUS_KEY } from '../../constants.js';
-import { calculateXP, getCurrentStreak } from '../../core/progression.js';
-import { STREAK_FREEZE_MAX, STREAK_FREEZE_EARN_INTERVAL } from '../../constants.js';
+import { EXERCISE_CONFIGS, SESSION_RESULT_KEY, SESSION_BONUS_KEY, SESSION_CELEBRATIONS_KEY } from '../../constants.js';
+import { calculateXP, getCurrentStreak, getLevel, getLevelTitle, checkBadges } from '../../core/progression.js';
+import { STREAK_FREEZE_MAX, STREAK_FREEZE_EARN_INTERVAL, THEME_UNLOCK_LEVELS, AVATAR_UNLOCK_LEVELS } from '../../constants.js';
+import type { CelebrationData } from '../components/celebration-overlay.js';
+import type { EarnedBadge, ThemeId } from '../../types.js';
 import { updateDifficulty } from '../../core/adaptive.js';
 import { createSessionPlan } from '../../core/session.js';
 import { t } from '../../core/i18n.js';
@@ -20,6 +22,35 @@ import { getBaselineExercises, getBaselineParams, createBaselineResult } from '.
 import { showToast } from '../components/toast.js';
 
 const DIFFICULTY_CHANGE_KEY = 'focus:difficulty_change';
+
+function buildCelebrationData(
+  levelBefore: number,
+  levelAfter: number,
+  newBadges: EarnedBadge[],
+): CelebrationData | null {
+  const data: CelebrationData = { badges: newBadges };
+
+  if (levelAfter > levelBefore) {
+    // Determine unlocked content at the new level
+    const unlockedThemes: ThemeId[] = [];
+    for (const [themeId, unlockLevel] of Object.entries(THEME_UNLOCK_LEVELS)) {
+      if (unlockLevel === levelAfter) {
+        unlockedThemes.push(themeId as ThemeId);
+      }
+    }
+    const unlockedAvatarLevel = AVATAR_UNLOCK_LEVELS.includes(levelAfter);
+
+    data.levelUp = {
+      newLevel: levelAfter,
+      title: getLevelTitle(levelAfter),
+      unlockedThemes,
+      unlockedAvatarLevel,
+    };
+  }
+
+  if (!data.levelUp && data.badges.length === 0) return null;
+  return data;
+}
 
 function updateWeeklyChallengeProgress(d: import('../../types.js').AppData, result: ExerciseResult): void {
   const challenge = d.progression.weeklyChallenge;
@@ -152,6 +183,9 @@ function renderSingleExercise(
       }
       result.xpEarned = xp;
 
+      // Capture level before XP addition for level-up detection
+      const levelBefore = getLevel(data.progression.totalXP);
+
       appState.updateData((d) => {
         // Add result to history
         d.exerciseHistory.push(result);
@@ -216,6 +250,37 @@ function renderSingleExercise(
       });
 
       appState.emit({ type: 'exercise-complete', result });
+
+      // Detect level-up and new badges
+      const updatedData = appState.getData();
+      const levelAfter = getLevel(updatedData.progression.totalXP);
+      const newBadges = checkBadges(updatedData.progression, updatedData.difficulty);
+
+      // Push newly earned badges into progression
+      if (newBadges.length > 0) {
+        appState.updateData((d2) => {
+          for (const badge of newBadges) {
+            d2.progression.earnedBadges.push(badge);
+          }
+        });
+        for (const badge of newBadges) {
+          appState.emit({ type: 'badge-earned', badge });
+        }
+      }
+
+      if (levelAfter > levelBefore) {
+        appState.emit({ type: 'level-up', newLevel: levelAfter, title: getLevelTitle(levelAfter) });
+      }
+
+      // Store celebration data for results screen
+      const celebrationData = buildCelebrationData(levelBefore, levelAfter, newBadges);
+      if (celebrationData) {
+        try {
+          sessionStorage.setItem(SESSION_CELEBRATIONS_KEY, JSON.stringify(celebrationData));
+        } catch {
+          // ignore
+        }
+      }
 
       // Navigate to results (store result in sessionStorage for results screen)
       try {
@@ -302,6 +367,9 @@ function renderSessionMode(
   let isPaused = false;
   let isFinished = false;
   let cleanupCurrent: (() => void) | null = null;
+
+  // Accumulated celebration data across session exercises
+  let sessionCelebration: CelebrationData = { badges: [] };
 
   // ── Show session plan ──────────────────────────────────────────────
 
@@ -442,6 +510,9 @@ function renderSessionMode(
       const xp = calculateXP(result, isLastExercise, isNewDay);
       result.xpEarned = xp;
 
+      // Capture level before XP addition for level-up detection
+      const sessionLevelBefore = getLevel(appData.progression.totalXP);
+
       // Update state for this exercise
       appState.updateData((d) => {
         d.exerciseHistory.push(result);
@@ -501,6 +572,39 @@ function renderSessionMode(
       });
 
       appState.emit({ type: 'exercise-complete', result });
+
+      // Detect level-up and badges for celebration accumulation
+      const updatedSessionData = appState.getData();
+      const sessionLevelAfter = getLevel(updatedSessionData.progression.totalXP);
+      const sessionNewBadges = checkBadges(updatedSessionData.progression, updatedSessionData.difficulty);
+
+      // Push newly earned badges into progression
+      if (sessionNewBadges.length > 0) {
+        appState.updateData((d2) => {
+          for (const badge of sessionNewBadges) {
+            d2.progression.earnedBadges.push(badge);
+          }
+        });
+        for (const badge of sessionNewBadges) {
+          appState.emit({ type: 'badge-earned', badge });
+        }
+      }
+
+      if (sessionLevelAfter > sessionLevelBefore) {
+        appState.emit({ type: 'level-up', newLevel: sessionLevelAfter, title: getLevelTitle(sessionLevelAfter) });
+      }
+
+      // Accumulate celebration data (keep highest level-up, accumulate badges)
+      const exerciseCelebration = buildCelebrationData(sessionLevelBefore, sessionLevelAfter, sessionNewBadges);
+      if (exerciseCelebration) {
+        // Level-up: keep the latest (highest) one
+        if (exerciseCelebration.levelUp) {
+          sessionCelebration.levelUp = exerciseCelebration.levelUp;
+        }
+        // Badges: accumulate
+        sessionCelebration.badges.push(...exerciseCelebration.badges);
+      }
+
       exerciseResults.push(result);
 
       // Start next exercise or finish session
@@ -618,6 +722,15 @@ function renderSessionMode(
       sessionStorage.setItem(SESSION_BONUS_KEY, '0');
     } catch {
       // ignore
+    }
+
+    // Write accumulated celebration data
+    if (sessionCelebration.levelUp || sessionCelebration.badges.length > 0) {
+      try {
+        sessionStorage.setItem(SESSION_CELEBRATIONS_KEY, JSON.stringify(sessionCelebration));
+      } catch {
+        // ignore
+      }
     }
 
     window.location.hash = '#/results';
