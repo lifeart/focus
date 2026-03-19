@@ -593,7 +593,7 @@ function renderBaselineMode(
         onClick: () => { isFinished = true; window.location.hash = '#/dashboard'; },
       }, [t('play.exit')]),
       el('h2', { className: 'exercise-title' }, [
-        `${t('baseline.title')} — ${exerciseName} (${currentIndex + 1}/${baselineExercises.length})`,
+        `${exerciseName} (${currentIndex + 1}/${baselineExercises.length})`,
       ]),
       el('button', {
         className: 'btn btn--ghost exercise-pause-btn',
