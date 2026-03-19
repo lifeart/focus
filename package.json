@@ -1,0 +1,16 @@
+{
+  "name": "focus-training-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "build:prod": "node build.js --prod",
+    "dev": "node build.js --dev",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

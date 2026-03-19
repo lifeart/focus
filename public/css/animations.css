@@ -1,0 +1,206 @@
+/* ============================================
+   Animations — Focus Training App
+   ============================================ */
+
+/* ── Fade ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ── Slide ── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Scale ── */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Breathe ── */
+@keyframes breathe {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.5); }
+  100% { transform: scale(1); }
+}
+
+/* ── Shimmer (skeleton loader) ── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Confetti Fall ── */
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(-10vh) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(720deg);
+  }
+}
+
+/* ── Countdown ── */
+@keyframes countDown {
+  0% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+/* ── Roll Up (number counter) ── */
+@keyframes rollUp {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Squish ── */
+@keyframes squish {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+/* ── Pulse ── */
+@keyframes pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* ── Spin ── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Bounce In ── */
+@keyframes bounceIn {
+  0%   { opacity: 0; transform: scale(0.3); }
+  50%  { opacity: 1; transform: scale(1.05); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+/* ── Shake (error feedback) ── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+
+/* ── Glow Pulse ── */
+@keyframes glowPulse {
+  0%   { box-shadow: 0 0 20px var(--primary-glow); }
+  50%  { box-shadow: 0 0 40px var(--primary-glow); }
+  100% { box-shadow: 0 0 20px var(--primary-glow); }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+.fade-in {
+  animation: fadeIn var(--duration-normal) ease forwards;
+}
+
+.fade-out {
+  animation: fadeOut var(--duration-normal) ease forwards;
+}
+
+.slide-up {
+  animation: slideUp var(--duration-normal) ease forwards;
+}
+
+.slide-down {
+  animation: slideDown var(--duration-normal) ease forwards;
+}
+
+.scale-in {
+  animation: scaleIn var(--duration-normal) ease forwards;
+}
+
+.bounce-in {
+  animation: bounceIn var(--duration-slow) ease forwards;
+}
+
+.shake {
+  animation: shake 400ms ease;
+}
+
+/* ── Staggered Delays ── */
+.delay-1 { animation-delay: 50ms; }
+.delay-2 { animation-delay: 100ms; }
+.delay-3 { animation-delay: 150ms; }
+.delay-4 { animation-delay: 200ms; }
+.delay-5 { animation-delay: 250ms; }
+.delay-6 { animation-delay: 300ms; }
+
+/* ── Initial hidden state for animated elements ── */
+[class*="slide-up"],
+[class*="scale-in"],
+[class*="bounce-in"] {
+  opacity: 0;
+}
+
+/* ============================================
+   Reduced Motion
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .fade-in,
+  .slide-up,
+  .slide-down,
+  .scale-in,
+  .bounce-in {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}

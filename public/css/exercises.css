@@ -1,0 +1,840 @@
+/* ============================================
+   Exercise Styles — Focus Training App
+   ============================================ */
+
+/* ── Common Exercise Area ── */
+.exercise-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  max-height: 70vh;
+  position: relative;
+  padding: var(--space-lg);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ── Stimulus Display ── */
+.stimulus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 200px;
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  color: var(--text);
+  text-align: center;
+  position: relative;
+}
+
+.stimulus--large {
+  font-size: 4rem;
+}
+
+.stimulus--xlarge {
+  font-size: 6rem;
+}
+
+/* ── Feedback Flash ── */
+.feedback-flash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-overlay);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.feedback-flash--correct {
+  background-color: rgba(78, 205, 196, 0.15);
+  opacity: 1;
+  animation: feedbackFlash 400ms ease forwards;
+}
+
+.feedback-flash--incorrect {
+  background-color: rgba(255, 107, 107, 0.15);
+  opacity: 1;
+  animation: feedbackFlash 400ms ease forwards;
+}
+
+@keyframes feedbackFlash {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── Exercise Controls ── */
+.exercise-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  width: 100%;
+}
+
+.exercise-controls--bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+/* ── Exercise Header Bar ── */
+.exercise-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  width: 100%;
+}
+
+.exercise-header__back {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  transition: background-color var(--transition-fast);
+}
+
+.exercise-header__back:hover {
+  background-color: var(--surface-2);
+}
+
+.exercise-header__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.exercise-header__info {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* ── Exercise Stats Bar ── */
+.exercise-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xl);
+  padding: var(--space-sm) var(--space-lg);
+}
+
+.exercise-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.exercise-stat__value {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  color: var(--text);
+}
+
+.exercise-stat__label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================
+   Go / No-Go Exercise
+   ============================================ */
+[data-exercise="go-no-go"] .stimulus {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-full);
+  min-height: auto;
+  transition: background-color var(--transition-fast);
+}
+
+[data-exercise="go-no-go"] .stimulus--go {
+  background-color: var(--success);
+  box-shadow: 0 0 40px rgba(78, 205, 196, 0.3);
+}
+
+[data-exercise="go-no-go"] .stimulus--no-go {
+  background-color: var(--error);
+  box-shadow: 0 0 40px rgba(255, 107, 107, 0.3);
+}
+
+[data-exercise="go-no-go"] .tap-zone {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+}
+
+/* ============================================
+   N-Back Exercise
+   ============================================ */
+[data-exercise="n-back"] .stimulus {
+  font-size: 5rem;
+  font-family: var(--font-heading);
+  color: var(--primary);
+  text-shadow: 0 0 30px var(--primary-glow);
+}
+
+[data-exercise="n-back"] .queue {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+}
+
+[data-exercise="n-back"] .queue__item {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  background-color: var(--surface-2);
+  border-radius: var(--radius-md);
+}
+
+[data-exercise="n-back"] .queue__item--current {
+  background-color: var(--primary);
+  color: var(--bg);
+  box-shadow: var(--shadow-glow);
+}
+
+[data-exercise="n-back"] .queue__item--target {
+  border: 2px solid var(--secondary);
+  color: var(--secondary);
+}
+
+/* ============================================
+   Flanker Exercise
+   ============================================ */
+[data-exercise="flanker"] .arrow-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+}
+
+[data-exercise="flanker"] .arrow {
+  font-size: 2.5rem;
+  font-weight: var(--weight-bold);
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+}
+
+[data-exercise="flanker"] .arrow--target {
+  color: var(--primary);
+  font-size: 3rem;
+  text-shadow: 0 0 20px var(--primary-glow);
+}
+
+[data-exercise="flanker"] .response-buttons {
+  display: flex;
+  gap: var(--space-xl);
+}
+
+[data-exercise="flanker"] .response-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-full);
+  background-color: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--text);
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+[data-exercise="flanker"] .response-btn:active {
+  transform: scale(0.9);
+  background-color: var(--primary);
+}
+
+/* ============================================
+   Visual Search Exercise
+   ============================================ */
+[data-exercise="visual-search"] .search-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  max-width: 320px;
+  width: 100%;
+}
+
+[data-exercise="visual-search"] .search-grid__item {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xl);
+  background-color: var(--surface-2);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+[data-exercise="visual-search"] .search-grid__item:hover {
+  background-color: var(--surface-3);
+}
+
+[data-exercise="visual-search"] .search-grid__item:active {
+  transform: scale(0.9);
+}
+
+[data-exercise="visual-search"] .search-grid__item--found {
+  background-color: var(--success-subtle);
+  border: 2px solid var(--success);
+}
+
+/* ============================================
+   Breathing Exercise
+   ============================================ */
+[data-exercise="breathing"] .breathing-circle {
+  width: 180px;
+  height: 180px;
+  border-radius: var(--radius-full);
+  background: radial-gradient(
+    circle at 40% 40%,
+    var(--primary-hover),
+    var(--primary),
+    var(--primary-active)
+  );
+  box-shadow: 0 0 60px var(--primary-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--duration-slow) ease-in-out;
+}
+
+[data-exercise="breathing"] .breathing-circle--inhale {
+  animation: breathe-in 4s ease-in-out forwards;
+}
+
+[data-exercise="breathing"] .breathing-circle--exhale {
+  animation: breathe-out 4s ease-in-out forwards;
+}
+
+@keyframes breathe-in {
+  from { transform: scale(1); }
+  to   { transform: scale(1.5); }
+}
+
+@keyframes breathe-out {
+  from { transform: scale(1.5); }
+  to   { transform: scale(1); }
+}
+
+[data-exercise="breathing"] .breathing-label {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--bg);
+  text-align: center;
+}
+
+[data-exercise="breathing"] .breathing-ring {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--primary-subtle);
+}
+
+/* ============================================
+   Pomodoro Timer
+   ============================================ */
+[data-exercise="pomodoro"] .timer-ring {
+  width: 240px;
+  height: 240px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-exercise="pomodoro"] .timer-ring__svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+[data-exercise="pomodoro"] .timer-ring__circle {
+  fill: none;
+  stroke: var(--surface-2);
+  stroke-width: 4;
+}
+
+[data-exercise="pomodoro"] .timer-ring__progress {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--transition-normal);
+}
+
+[data-exercise="pomodoro"] .timer-ring__time {
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  color: var(--text);
+}
+
+[data-exercise="pomodoro"] .timer-ring__label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-top: var(--space-xs);
+}
+
+[data-exercise="pomodoro"] .pomodoro-phases {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-lg);
+}
+
+[data-exercise="pomodoro"] .pomodoro-phase {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--surface-2);
+}
+
+[data-exercise="pomodoro"] .pomodoro-phase--active {
+  background-color: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
+}
+
+[data-exercise="pomodoro"] .pomodoro-phase--done {
+  background-color: var(--success);
+}
+
+/* ============================================
+   Countdown Overlay
+   ============================================ */
+.countdown-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(15, 15, 26, 0.9);
+  z-index: var(--z-overlay);
+}
+
+.countdown-overlay__number {
+  font-family: var(--font-heading);
+  font-size: 6rem;
+  font-weight: var(--weight-bold);
+  color: var(--primary);
+  animation: countDown 1s ease-out;
+}
+
+/* ============================================
+   Results Screen
+   ============================================ */
+.results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.results__score {
+  font-family: var(--font-heading);
+  font-size: 4rem;
+  font-weight: var(--weight-bold);
+  color: var(--primary);
+}
+
+.results__label {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+}
+
+.results__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+  width: 100%;
+  max-width: 320px;
+}
+
+.results__stat {
+  background-color: var(--surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-md);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.results__stat-value {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  color: var(--text);
+}
+
+.results__stat-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: var(--space-xs);
+}
+
+/* ============================================
+   Missing Exercise Component Styles
+   ============================================ */
+
+/* ── Exercise Timer ── */
+.exercise-timer {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* ── Exercise Trial Counter ── */
+.exercise-trial-counter {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Exercise Stimulus Area ── */
+.exercise-stimulus-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  width: 100%;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Exercise Level Label ── */
+.exercise-level-label {
+  font-family: var(--font-heading);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Exercise Header Info (generic) ── */
+.exercise-header-info {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* ============================================
+   Countdown Overlay — class-matched to helpers.ts
+   ============================================ */
+.countdown-number {
+  font-family: var(--font-heading);
+  font-size: 6rem;
+  font-weight: var(--weight-bold);
+  color: var(--primary);
+}
+
+.countdown-animate {
+  animation: countDown 0.8s ease-out;
+}
+
+/* ============================================
+   N-Back Exercise — component classes
+   ============================================ */
+.nback-letter {
+  font-family: var(--font-heading);
+  font-size: 5rem;
+  font-weight: var(--weight-bold);
+  color: var(--primary);
+  text-shadow: 0 0 30px var(--primary-glow);
+  line-height: 1;
+  min-height: 6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nback-letter-fade {
+  animation: nbackFadeIn 0.3s ease-out;
+}
+
+@keyframes nbackFadeIn {
+  0%   { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.nback-stimulus-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.nback-queue {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  min-height: 44px;
+}
+
+.nback-queue-letter {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  background-color: var(--surface-2);
+  border-radius: var(--radius-md);
+}
+
+.nback-match-btn {
+  min-width: 160px;
+  min-height: 48px;
+  padding: var(--space-sm) var(--space-xl);
+  font-family: var(--font-heading);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--bg);
+  background-color: var(--primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.nback-match-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+.nback-match-btn:active {
+  transform: scale(0.95);
+  background-color: var(--primary-active);
+}
+
+.nback-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  width: 100%;
+}
+
+/* ============================================
+   Flanker Exercise — component classes
+   ============================================ */
+.flanker-btn {
+  min-width: 80px;
+  min-height: 64px;
+  padding: 0.75rem 2rem;
+  font-size: 2.5rem;
+  line-height: 1;
+  border: 2px solid var(--surface-3);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.flanker-btn:hover {
+  background-color: var(--surface-3);
+}
+
+.flanker-btn:active {
+  transform: scale(0.9);
+  background-color: var(--primary);
+  color: var(--bg);
+}
+
+.flanker-btn--left,
+.flanker-btn--right {
+  /* Direction-specific overrides if needed */
+}
+
+.flanker-buttons {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-xl);
+  margin-top: var(--space-xl);
+}
+
+/* ============================================
+   Visual Search Exercise — component classes
+   ============================================ */
+.visual-search-grid {
+  display: grid;
+  gap: var(--space-sm);
+  justify-items: center;
+  align-items: center;
+  margin: var(--space-lg) auto;
+  padding: var(--space-md);
+}
+
+.visual-search-no-target-btn {
+  display: block;
+  margin: var(--space-md) auto;
+  min-height: 48px;
+  padding: 0.75rem 2rem;
+  font-family: var(--font-heading);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+  background-color: var(--surface-2);
+  border: 2px solid var(--surface-3);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.visual-search-no-target-btn:hover {
+  background-color: var(--surface-3);
+}
+
+.visual-search-no-target-btn:active {
+  transform: scale(0.95);
+}
+
+.visual-search-no-target-btn[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ============================================
+   Breathing Exercise — component classes
+   ============================================ */
+.breathing-phase-label {
+  text-align: center;
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  margin-bottom: var(--space-xl);
+  color: var(--text);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.breathing-circle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+}
+
+.breathing-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-active) 100%);
+  box-shadow: 0 0 20px 10px var(--primary-glow);
+}
+
+.breathing-cycle-counter {
+  text-align: center;
+  margin-top: var(--space-xl);
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.breathing-info {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-top: var(--space-md);
+}
+
+/* ============================================
+   Pomodoro Timer — component classes
+   ============================================ */
+.pomodoro-ring-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pomodoro-timer-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.pomodoro-quote {
+  text-align: center;
+  margin-top: var(--space-lg);
+  padding: 0 var(--space-md);
+  font-size: var(--text-base);
+  font-style: italic;
+  color: var(--text-secondary);
+  line-height: var(--leading-normal);
+}
+
+.pomodoro-controls {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  margin-top: var(--space-lg);
+}
+
+/* ============================================
+   Feedback Flash (n-back inline variant)
+   ============================================ */
+/* Already defined above — .feedback-flash, .feedback-flash--correct, .feedback-flash--incorrect */
