@@ -32,6 +32,8 @@ body {
   background-color: var(--bg);
   min-height: 100vh;
   overflow-x: hidden;
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
 }
 
 /* ── Typography ── */
@@ -86,11 +88,24 @@ button, input, select, textarea {
   border: none;
   outline: none;
   background: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+input, textarea, select {
+  font-size: var(--text-base); /* 16px minimum prevents iOS auto-zoom */
 }
 
 button {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+a, label, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 /* ── Tables ── */

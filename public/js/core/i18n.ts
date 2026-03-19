@@ -11,7 +11,7 @@ export function initI18n(locale: Locale): void {
 
 export function setLocale(locale: Locale): void {
   currentLocale = locale;
-  currentTable = TRANSLATIONS[locale] || TRANSLATIONS['ru'];
+  currentTable = TRANSLATIONS[locale] || TRANSLATIONS['en'];
   document.documentElement.lang = locale;
   document.title = t('app.title');
 }
@@ -27,7 +27,7 @@ export function detectLocale(): Locale {
 }
 
 export function t(key: TranslationKey, params?: Record<string, string | number>): string {
-  let text = currentTable[key] ?? TRANSLATIONS['ru'][key] ?? key;
+  let text = currentTable[key] ?? TRANSLATIONS['en'][key] ?? key;
   if (params) {
     for (const [k, v] of Object.entries(params)) {
       text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
@@ -37,7 +37,7 @@ export function t(key: TranslationKey, params?: Record<string, string | number>)
 }
 
 export function tPlural(key: TranslationKey, count: number, params?: Record<string, string | number>): string {
-  const raw = currentTable[key] ?? TRANSLATIONS['ru'][key] ?? '';
+  const raw = currentTable[key] ?? TRANSLATIONS['en'][key] ?? '';
   const forms = raw.split('|');
   const form = selectPluralForm(currentLocale, count, forms);
   let result = form;

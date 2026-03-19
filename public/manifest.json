@@ -3,6 +3,7 @@
   "short_name": "Focus",
   "description": "Science-based attention training with cognitive exercises",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0f0f1a",
   "theme_color": "#7c5cfc",
@@ -27,7 +28,20 @@
       "type": "image/svg+xml"
     }
   ],
-  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Start Training",
+      "short_name": "Train",
+      "url": "./#/exercises",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Statistics",
+      "short_name": "Stats",
+      "url": "./#/stats",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "lang": "en",
   "dir": "ltr"
 }

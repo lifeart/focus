@@ -19,9 +19,17 @@
   flex: 1;
   min-height: calc(100vh - var(--nav-height));
   padding: var(--space-lg);
+  padding-top: calc(var(--space-lg) + env(safe-area-inset-top));
   padding-bottom: calc(var(--nav-height) + var(--space-lg) + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
+}
+
+/* Standalone PWA: no browser chrome, adjust for status bar */
+@media (display-mode: standalone) {
+  .screen {
+    padding-top: calc(var(--space-lg) + env(safe-area-inset-top));
+  }
 }
 
 .screen--centered {
