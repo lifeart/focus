@@ -14,6 +14,11 @@ export function migrateSchema(data: any): AppData {
     data.version = CURRENT_DATA_VERSION;
   }
 
+  // Ensure locale exists (added in i18n migration)
+  if (data.settings && !data.settings.locale) {
+    data.settings.locale = 'ru';
+  }
+
   return data as AppData;
 }
 

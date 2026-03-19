@@ -13,9 +13,9 @@ const AVATAR_COLORS = [
 ];
 
 const DAILY_GOAL_OPTIONS = [
-  { minutes: 5, label: '5 мин', subtitleKey: 'onboarding.goal.easy' as const },
-  { minutes: 10, label: '10 мин', subtitleKey: 'onboarding.goal.optimal' as const },
-  { minutes: 15, label: '15 мин', subtitleKey: 'onboarding.goal.advanced' as const },
+  { minutes: 5, subtitleKey: 'onboarding.goal.easy' as const },
+  { minutes: 10, subtitleKey: 'onboarding.goal.optimal' as const },
+  { minutes: 15, subtitleKey: 'onboarding.goal.advanced' as const },
 ];
 
 const TOTAL_TRIALS = 10;
@@ -535,7 +535,7 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
     const goalsContainer = el('div', { className: 'onboarding__goals' });
     DAILY_GOAL_OPTIONS.forEach((opt) => {
       const card = el('div', { className: 'onboarding__goal-card' }, [
-        el('div', { className: 'onboarding__goal-value' }, [opt.label]),
+        el('div', { className: 'onboarding__goal-value' }, [`${opt.minutes} ${t('stats.min')}`]),
         el('div', { className: 'onboarding__goal-subtitle' }, [t(opt.subtitleKey)]),
       ]);
       if (opt.minutes === selectedGoal) {

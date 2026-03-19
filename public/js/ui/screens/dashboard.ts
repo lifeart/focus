@@ -292,7 +292,7 @@ export const renderDashboard: ScreenRender = (container, _params) => {
       const config = EXERCISE_CONFIGS[result.exerciseId];
       const tier = getScoreTier(result.score);
       const exerciseName = t(`exercise.${result.exerciseId}.name` as any);
-      const tierLabel = t(`scoreTier.${tier.tier}` as any);
+      const tierLabel = tier.label;
       const item = el('div', { className: 'activity-item' }, [
         el('div', { className: 'activity-item__icon' }, [config?.icon || '\u2753']),
         el('div', { className: 'activity-item__info' }, [
