@@ -1,7 +1,22 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { getLevel, getLevelTitle, checkBadges } from '../public/js/core/progression';
+import { setLocale, getLocale } from '../public/js/core/i18n';
 import { THEME_UNLOCK_LEVELS, AVATAR_UNLOCK_LEVELS, xpForLevel } from '../public/js/constants';
 import type { ProgressionData, DifficultyState, ExerciseId, EarnedBadge, ThemeId } from '../public/js/types';
+
+let savedLocale: string;
+
+beforeAll(() => {
+  // Stub document so setLocale does not crash in node environment
+  vi.stubGlobal('document', { documentElement: { lang: '' }, title: '' });
+  savedLocale = getLocale();
+  setLocale('en');
+});
+
+afterAll(() => {
+  setLocale(savedLocale as any);
+  vi.unstubAllGlobals();
+});
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -221,17 +236,16 @@ describe('CelebrationData serialization', () => {
 describe('getLevelTitle for celebration display', () => {
   it('returns correct title for level 5', () => {
     const title = getLevelTitle(5);
-    expect(title).toBeTruthy();
-    expect(typeof title).toBe('string');
+    expect(title).toBe('Alert Mind');
   });
 
   it('returns correct title for level 30', () => {
     const title = getLevelTitle(30);
-    expect(title).toBeTruthy();
+    expect(title).toBe('Absolute');
   });
 
   it('clamps out-of-range levels', () => {
     const title = getLevelTitle(0);
-    expect(title).toBeTruthy(); // Should clamp to level 1
+    expect(title).toBe('Newcomer'); // Should clamp to level 1
   });
 });

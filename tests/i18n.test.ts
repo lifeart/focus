@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterAll, vi } from 'vitest';
 import { TRANSLATIONS } from '../public/js/i18n/index';
 import { en } from '../public/js/i18n/en';
 import { ru } from '../public/js/i18n/ru';
@@ -24,6 +24,11 @@ beforeEach(() => {
   setLocale('en');
   docMock.documentElement.lang = '';
   docMock.title = '';
+});
+
+afterAll(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 // ---------------------------------------------------------------------------

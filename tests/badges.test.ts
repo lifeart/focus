@@ -22,6 +22,11 @@ function makeProgression(overrides?: Partial<ProgressionData>): ProgressionData 
     level: 1,
     activityDays: [],
     longestStreak: 0,
+    currentStreak: 0,
+    streakFreezes: 0,
+    streakFreezeUsedDays: [],
+    lastStreakCheckDate: '',
+    streakFreezeEarnedAt: [],
     earnedBadges: [],
     personalRecords: {
       'go-no-go': 0,
@@ -165,5 +170,102 @@ describe('checkBadges', () => {
     const newBadges = checkBadges(progression, difficulty);
     const sessionBadge = newBadges.find((b) => b.id === 'sessions');
     expect(sessionBadge).toBeUndefined();
+  });
+
+  // ─── weekly-goal badge ─────────────────────────────────────────────
+  it('awards weekly-goal badge at bronze (2 weeks with >= 5 activity days)', () => {
+    // Create 2 full weeks of activity (Mon-Fri each week)
+    const activityDays: string[] = [];
+    // Week 1: Jan 6-10 2025 (Mon-Fri)
+    for (let d = 6; d <= 10; d++) {
+      activityDays.push(`2025-01-${String(d).padStart(2, '0')}`);
+    }
+    // Week 2: Jan 13-17 2025 (Mon-Fri)
+    for (let d = 13; d <= 17; d++) {
+      activityDays.push(`2025-01-${String(d).padStart(2, '0')}`);
+    }
+    const progression = makeProgression({ activityDays });
+    const difficulty = makeDefaultDifficulty();
+    const newBadges = checkBadges(progression, difficulty);
+    const weeklyBadge = newBadges.find((b) => b.id === 'weekly-goal');
+    expect(weeklyBadge).toBeDefined();
+    expect(weeklyBadge!.tier).toBe('bronze');
+  });
+
+  // ─── go-no-go-accuracy badge ──────────────────────────────────────
+  it('awards go-no-go-accuracy badge at bronze (personal record >= 85)', () => {
+    const progression = makeProgression({
+      personalRecords: {
+        'go-no-go': 85,
+        'n-back': 0,
+        'flanker': 0,
+        'visual-search': 0,
+        'breathing': 0,
+        'pomodoro': 0,
+      },
+    });
+    const difficulty = makeDefaultDifficulty();
+    const newBadges = checkBadges(progression, difficulty);
+    const accBadge = newBadges.find((b) => b.id === 'go-no-go-accuracy');
+    expect(accBadge).toBeDefined();
+    expect(accBadge!.tier).toBe('bronze');
+  });
+
+  it('awards go-no-go-accuracy badge at gold (personal record >= 98)', () => {
+    const progression = makeProgression({
+      personalRecords: {
+        'go-no-go': 98,
+        'n-back': 0,
+        'flanker': 0,
+        'visual-search': 0,
+        'breathing': 0,
+        'pomodoro': 0,
+      },
+    });
+    const difficulty = makeDefaultDifficulty();
+    const newBadges = checkBadges(progression, difficulty);
+    const accBadge = newBadges.find((b) => b.id === 'go-no-go-accuracy');
+    expect(accBadge).toBeDefined();
+    expect(accBadge!.tier).toBe('gold');
+  });
+
+  // ─── n-back-level badge ───────────────────────────────────────────
+  it('awards n-back-level badge at bronze (currentLevel >= 3)', () => {
+    const difficulty = makeDefaultDifficulty();
+    difficulty['n-back'].currentLevel = 3;
+    const progression = makeProgression();
+    const newBadges = checkBadges(progression, difficulty);
+    const nBackBadge = newBadges.find((b) => b.id === 'n-back-level');
+    expect(nBackBadge).toBeDefined();
+    expect(nBackBadge!.tier).toBe('bronze');
+  });
+
+  it('awards n-back-level badge at gold (currentLevel >= 10)', () => {
+    const difficulty = makeDefaultDifficulty();
+    difficulty['n-back'].currentLevel = 10;
+    const progression = makeProgression();
+    const newBadges = checkBadges(progression, difficulty);
+    const nBackBadge = newBadges.find((b) => b.id === 'n-back-level');
+    expect(nBackBadge).toBeDefined();
+    expect(nBackBadge!.tier).toBe('gold');
+  });
+
+  // ─── personal-record badge ────────────────────────────────────────
+  it('awards personal-record badge at bronze (recordsBroken >= 5)', () => {
+    const progression = makeProgression({ recordsBroken: 5 });
+    const difficulty = makeDefaultDifficulty();
+    const newBadges = checkBadges(progression, difficulty);
+    const prBadge = newBadges.find((b) => b.id === 'personal-record');
+    expect(prBadge).toBeDefined();
+    expect(prBadge!.tier).toBe('bronze');
+  });
+
+  it('awards personal-record badge at gold (recordsBroken >= 30)', () => {
+    const progression = makeProgression({ recordsBroken: 30 });
+    const difficulty = makeDefaultDifficulty();
+    const newBadges = checkBadges(progression, difficulty);
+    const prBadge = newBadges.find((b) => b.id === 'personal-record');
+    expect(prBadge).toBeDefined();
+    expect(prBadge!.tier).toBe('gold');
   });
 });

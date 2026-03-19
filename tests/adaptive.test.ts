@@ -85,6 +85,26 @@ describe('updateDifficulty', () => {
     const result = updateDifficulty(state, 72);
     expect(result.recentScores.length).toBe(5);
   });
+
+  it('does NOT level up on score exactly 88 (boundary: condition is > 88)', () => {
+    const state = makeState({ currentLevel: 5, recentScores: [] });
+    const result = updateDifficulty(state, 88);
+    expect(result.currentLevel).toBe(5);
+  });
+
+  it('does NOT level down on score exactly 45 (boundary: condition is < 45)', () => {
+    const state = makeState({ currentLevel: 5, recentScores: [] });
+    const result = updateDifficulty(state, 45);
+    expect(result.currentLevel).toBe(5);
+  });
+
+  it('score=89 with recentScores=[80,80] levels up by exactly 1 (not 2)', () => {
+    // score > 88 triggers instant level-up; avg of [80,80,89] = 83 >= 75 would also
+    // trigger if the else-if were missing. Verify only one increment happens.
+    const state = makeState({ currentLevel: 5, recentScores: [80, 80] });
+    const result = updateDifficulty(state, 89);
+    expect(result.currentLevel).toBe(6);
+  });
 });
 
 describe('getExerciseParams', () => {

@@ -235,10 +235,12 @@ describe('checkDailyChallengeProgress', () => {
       target: 1,
       date: todayStr,
     });
+    // Old exercise with score 80, new one with 85
+    const oldResult = makeResult({ score: 80, exerciseId: 'go-no-go', timestamp: todayTs - 86400000 });
     const result = makeResult({ score: 85, exerciseId: 'go-no-go', timestamp: todayTs });
     const prog = makeProgression({
       personalRecords: {
-        'go-no-go': 80,
+        'go-no-go': 85, // already updated by finishExercise
         'n-back': 0,
         'flanker': 0,
         'visual-search': 0,
@@ -246,8 +248,30 @@ describe('checkDailyChallengeProgress', () => {
         'pomodoro': 0,
       },
     });
-    const updated = checkDailyChallengeProgress(challenge, result, prog, [result]);
+    const updated = checkDailyChallengeProgress(challenge, result, prog, [oldResult, result]);
     expect(updated.completed).toBe(true);
+  });
+
+  it('beat-personal-best: does not complete on first ever exercise', () => {
+    const challenge = makeChallenge({
+      type: 'beat-personal-best',
+      target: 1,
+      date: todayStr,
+    });
+    const result = makeResult({ score: 85, exerciseId: 'go-no-go', timestamp: todayTs });
+    const prog = makeProgression({
+      personalRecords: {
+        'go-no-go': 85, // first record set
+        'n-back': 0,
+        'flanker': 0,
+        'visual-search': 0,
+        'breathing': 0,
+        'pomodoro': 0,
+      },
+    });
+    // No older exercise in history
+    const updated = checkDailyChallengeProgress(challenge, result, prog, [result]);
+    expect(updated.completed).toBe(false);
   });
 
   // ── train-minutes ──

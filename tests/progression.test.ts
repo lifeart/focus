@@ -1,6 +1,21 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { calculateXP, getLevel, getLevelTitle, getXPProgress, updateStreak, getScoreTier } from '../public/js/core/progression';
+import { setLocale, getLocale } from '../public/js/core/i18n';
 import type { ExerciseResult } from '../public/js/types';
+
+let savedLocale: string;
+
+beforeAll(() => {
+  // Stub document so setLocale does not crash in node environment
+  vi.stubGlobal('document', { documentElement: { lang: '' }, title: '' });
+  savedLocale = getLocale();
+  setLocale('ru');
+});
+
+afterAll(() => {
+  setLocale(savedLocale as any);
+  vi.unstubAllGlobals();
+});
 
 function makeResult(overrides?: Partial<ExerciseResult>): ExerciseResult {
   return {
