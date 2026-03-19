@@ -4,7 +4,7 @@ import { createDisposables } from '../core/disposables.js';
 import { createExerciseTimer, formatTime, calculateDPrime, calculateCV, calculateLapseRate } from './helpers.js';
 import { t } from '../core/i18n.js';
 
-const DURATION_MS = 300_000; // 5 minutes
+const DURATION_MS = 180_000; // 3 minutes
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 const MATCH_RATE = 0.3;
 const LURE_RATE = 0.15; // 15% of non-target trials are lures (only at level 3+)

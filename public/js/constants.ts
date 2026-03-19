@@ -41,7 +41,7 @@ export const EXERCISE_CONFIGS: Record<ExerciseId, ExerciseConfig> = {
     description: 'Запоминайте последовательность и отмечайте совпадения с N шагов назад',
     category: 'cognitive',
     icon: '🧠',
-    durationSeconds: 90,
+    durationSeconds: 180,
     minLevel: 1,
     maxLevel: 10,
   },

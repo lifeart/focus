@@ -256,6 +256,18 @@ export const renderResults: ScreenRender = (container, _params) => {
     scoreValueEl.textContent = `${current}%`;
   }, 20);
 
+  // ── Encouragement ──
+  const encourageKeyMap: Record<string, string> = {
+    'warmup': 'results.encourage.warmup',
+    'good-start': 'results.encourage.goodStart',
+    'great': 'results.encourage.great',
+    'amazing': 'results.encourage.amazing',
+    'perfect': 'results.encourage.perfect',
+  };
+  const encourageEl = el('p', { className: 'results-encouragement' }, [
+    t(encourageKeyMap[tier.tier] as any),
+  ]);
+
   // ── Metrics ──
   const metrics = getMetricsForExercise(result);
   const metricsItems = metrics.map((m) =>
@@ -355,6 +367,7 @@ export const renderResults: ScreenRender = (container, _params) => {
   // ── Assemble ──
   container.appendChild(header);
   container.appendChild(scoreSection);
+  container.appendChild(encourageEl);
   container.appendChild(metricsSection);
   if (bonusEl) container.appendChild(bonusEl);
   container.appendChild(xpEl);

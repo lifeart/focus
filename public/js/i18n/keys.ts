@@ -177,6 +177,13 @@ export interface TranslationTable {
   'onboarding.colorExplain': string;
 
   // Results
+  'results.encourage.warmup': string;
+  'results.encourage.goodStart': string;
+  'results.encourage.great': string;
+  'results.encourage.amazing': string;
+  'results.encourage.perfect': string;
+  'difficulty.levelDown': string;
+  'difficulty.levelUp': string;
   'results.noData': string;
   'results.parseError': string;
   'results.bonusBanner': string;

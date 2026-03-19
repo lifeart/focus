@@ -16,6 +16,9 @@ import { updateDifficulty } from '../../core/adaptive.js';
 import { createSessionPlan } from '../../core/session.js';
 import { t } from '../../core/i18n.js';
 import { getBaselineExercises, getBaselineParams, createBaselineResult } from '../../core/baseline.js';
+import { showToast } from '../components/toast.js';
+
+const DIFFICULTY_CHANGE_KEY = 'focus:difficulty_change';
 
 function createExercise(exerciseId: ExerciseId): Exercise | null {
   const data = appState.getData();
@@ -159,6 +162,10 @@ function renderSingleExercise(
         // Update difficulty
         if (exId !== 'breathing' && exId !== 'pomodoro') {
           d.difficulty[exId] = updateDifficulty(d.difficulty[exId], result.score);
+          const levelChange = d.difficulty[exId].lastLevelChange;
+          if (levelChange) {
+            try { sessionStorage.setItem(DIFFICULTY_CHANGE_KEY, levelChange); } catch {}
+          }
         }
       });
 
@@ -179,6 +186,14 @@ function renderSingleExercise(
 
   // Start exercise
   async function startExercise(): Promise<void> {
+    // Show difficulty change notification from previous session
+    const diffChange = sessionStorage.getItem(DIFFICULTY_CHANGE_KEY);
+    if (diffChange) {
+      sessionStorage.removeItem(DIFFICULTY_CHANGE_KEY);
+      const msg = diffChange === 'up' ? t('difficulty.levelUp') : t('difficulty.levelDown');
+      showToast(msg);
+    }
+
     exercise = createExercise(exId);
     if (!exercise) return;
 
@@ -407,6 +422,10 @@ function renderSessionMode(
 
         if (exId !== 'breathing' && exId !== 'pomodoro') {
           d.difficulty[exId] = updateDifficulty(d.difficulty[exId], result.score);
+          const levelChange = d.difficulty[exId].lastLevelChange;
+          if (levelChange) {
+            try { sessionStorage.setItem(DIFFICULTY_CHANGE_KEY, levelChange); } catch {}
+          }
         }
       });
 

@@ -108,6 +108,7 @@ export interface DifficultyState {
   recentScores: number[]; // last N scores
   sessionsAtCurrentLevel: number;
   lastMicroAdjustment?: number; // timestamp
+  lastLevelChange?: 'up' | 'down';
 }
 
 export interface UserProfile {

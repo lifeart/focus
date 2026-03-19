@@ -52,12 +52,18 @@ export function updateDifficulty(state: DifficultyState, score: number): Difficu
     lastMicroAdjustment = Date.now();
   }
 
+  const levelChange: 'up' | 'down' | undefined =
+    newLevel > state.currentLevel ? 'up' :
+    newLevel < state.currentLevel ? 'down' :
+    undefined;
+
   return {
     exerciseId: state.exerciseId,
     currentLevel: newLevel,
     recentScores,
     sessionsAtCurrentLevel,
     lastMicroAdjustment,
+    lastLevelChange: levelChange,
   };
 }
 
