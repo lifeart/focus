@@ -84,13 +84,19 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
     return cells;
   }
 
-  function createShapeElement(shape: ShapeType): HTMLElement {
+  function createShapeElement(shape: ShapeType, index: number): HTMLElement {
     const classMap: Record<ShapeType, string> = {
       'red-circle': 'vs-item vs-item--red-circle',
       'blue-circle': 'vs-item vs-item--blue-circle',
       'red-square': 'vs-item vs-item--red-square',
     };
-    const div = el('div', { className: classMap[shape] });
+    const labelMap: Record<ShapeType, string> = {
+      'red-circle': 'Red circle',
+      'blue-circle': 'Blue circle',
+      'red-square': 'Red square',
+    };
+    const div = el('div', { className: classMap[shape], tabindex: '0', role: 'button' });
+    div.setAttribute('aria-label', `${labelMap[shape]} (${index + 1})`);
     const size = Math.max(44, Math.floor(200 / currentGridSize));
     div.style.setProperty('--vs-item-size', `${size}px`);
     div.setAttribute('data-shape', shape);
@@ -109,12 +115,22 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
     gridContainer.style.maxWidth = `${currentGridSize * (Math.max(44, Math.floor(200 / currentGridSize)) + 8)}px`;
 
     // Render grid cells
-    for (const shape of cells) {
-      const shapeEl = createShapeElement(shape);
+    for (let i = 0; i < cells.length; i++) {
+      const shape = cells[i];
+      const shapeEl = createShapeElement(shape, i);
       gridContainer.appendChild(shapeEl);
 
       disposables.addListener(shapeEl, 'click', () => {
         handleGridClick(shape);
+      });
+
+      // Keyboard support: Enter/Space to select a grid cell
+      disposables.addListener(shapeEl, 'keydown', (e: Event) => {
+        const ke = e as KeyboardEvent;
+        if (ke.key === 'Enter' || ke.key === ' ') {
+          ke.preventDefault();
+          handleGridClick(shape);
+        }
       });
     }
 
@@ -191,8 +207,10 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
       sound.playIncorrect();
       if (container) showFeedback(container, false, disposables);
     } else {
-      // Target-absent timeout: auto-proceed as correct-ish
-      trials.push({ targetPresent: false, correct: true, rt: null, trialGridSize: currentGridSize });
+      // Target-absent timeout: non-response is not a correct rejection
+      trials.push({ targetPresent: false, correct: false, rt: null, trialGridSize: currentGridSize });
+      sound.playIncorrect();
+      if (container) showFeedback(container, false, disposables);
     }
 
     clearGrid();
@@ -318,6 +336,15 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
 
       disposables.addListener(noTargetBtn, 'click', () => {
         handleNoTarget();
+      });
+
+      // Keyboard support: 'n' key triggers "No Target"
+      disposables.addListener(document, 'keydown', (e: Event) => {
+        const ke = e as KeyboardEvent;
+        if (ke.key === 'n' || ke.key === 'N') {
+          ke.preventDefault();
+          handleNoTarget();
+        }
       });
 
       // Timer tick updates

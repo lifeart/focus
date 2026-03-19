@@ -11,7 +11,7 @@
   --surface-3:      #30304d;
   --text:           #e8e8f0;
   --text-secondary: #9898b0;
-  --text-muted:     #6a6a82;
+  --text-muted:     #8e8ea8;
 
   /* ── Brand Colors ── */
   --primary:        #7c5cfc;
@@ -119,7 +119,7 @@
   --surface-3: #1c4068;
   --text: #caf0f8;
   --text-secondary: #90e0ef;
-  --text-muted: #5a8aaa;
+  --text-muted: #7eaacc;
   --primary: #00b4d8;
   --primary-hover: #0096c7;
   --primary-active: #0077a8;
@@ -140,7 +140,7 @@
   --surface-3: #4d2a2a;
   --text: #ffecd2;
   --text-secondary: #ddb892;
-  --text-muted: #9a7a5a;
+  --text-muted: #bea07a;
   --primary: #ff6b35;
   --primary-hover: #e55a2b;
   --primary-active: #cc4a1e;
@@ -161,7 +161,7 @@
   --surface-3: #284d28;
   --text: #d8f3dc;
   --text-secondary: #95d5b2;
-  --text-muted: #5a8a5a;
+  --text-muted: #7eaa7e;
   --primary: #2d6a4f;
   --primary-hover: #40916c;
   --primary-active: #1b5e40;
@@ -182,7 +182,7 @@
   --surface-3: #1e1e1e;
   --text: #ffffff;
   --text-secondary: #888888;
-  --text-muted: #555555;
+  --text-muted: #8a8a8a;
   --primary: #7c5cfc;
   --primary-hover: #6a4de0;
   --primary-active: #5a3dc8;
@@ -203,7 +203,7 @@
   --surface-3: #e8e8f0;
   --text: #1a1a2e;
   --text-secondary: #666680;
-  --text-muted: #8888a0;
+  --text-muted: #6e6e88;
   --primary: #6b4ce6;
   --primary-hover: #5a3dd0;
   --primary-active: #4a2db8;
@@ -224,7 +224,7 @@
   --surface-3:      #30304d;
   --text:           #e8e8f0;
   --text-secondary: #9898b0;
-  --text-muted:     #6a6a82;
+  --text-muted:     #8e8ea8;
 
   --primary:        #7c5cfc;
   --primary-hover:  #9279ff;

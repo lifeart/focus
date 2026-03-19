@@ -1,13 +1,12 @@
 import type { Exercise, ExerciseResult, ExerciseMetrics, DifficultyParams, SoundManager, Disposables } from '../types.js';
 import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
-import { createExerciseTimer, jitteredInterval, showFeedback, formatTime, calculateCV, calculateLapseRate } from './helpers.js';
+import { createExerciseTimer, jitteredInterval, showFeedback, formatTime, calculateCV, calculateLapseRate, MIN_RT_MS } from './helpers.js';
 import { t } from '../core/i18n.js';
 
 const DURATION_MS = 180_000; // 3 minutes
 const GO_COLORS = ['#4ecdc4', '#45b7d1', '#96ceb4', '#ffd93d'];
 const NOGO_COLOR = '#ff6b6b';
-const GRACE_PERIOD_MS = 200;
 
 interface TrialRecord {
   isGo: boolean;
@@ -57,6 +56,7 @@ export function createGoNoGo(level: number, params: DifficultyParams, sound: Sou
     const shape = el('div', {
       className: go ? 'gng-stimulus gng-stimulus--go' : 'gng-stimulus gng-stimulus--nogo',
     });
+    shape.setAttribute('aria-label', go ? 'Go stimulus - tap now' : 'No-Go stimulus - do not tap');
     if (go) {
       shape.style.setProperty('--gng-go-color', randomGoColor());
     }
@@ -73,6 +73,10 @@ export function createGoNoGo(level: number, params: DifficultyParams, sound: Sou
     if (!started || paused || !awaitingResponse) return;
 
     const rt = Date.now() - stimulusShownAt;
+
+    // Ignore anticipatory responses (too fast to be genuine)
+    if (rt < MIN_RT_MS) return;
+
     awaitingResponse = false;
 
     if (currentTrialIsGo) {
@@ -130,15 +134,11 @@ export function createGoNoGo(level: number, params: DifficultyParams, sound: Sou
 
     updateTrialCounter();
 
-    // Stimulus disappears after stimulusDuration + grace period for Go, stimulusDuration for No-Go
-    const displayTime = currentTrialIsGo
-      ? stimulusDuration + GRACE_PERIOD_MS
-      : stimulusDuration;
-
+    // Stimulus disappears after stimulusDuration for both Go and No-Go (no timing cue)
     stimulusTimeoutId = disposables.setTimeout(() => {
       stimulusTimeoutId = null;
       onStimulusEnd();
-    }, displayTime);
+    }, stimulusDuration);
   }
 
   function onStimulusEnd(): void {

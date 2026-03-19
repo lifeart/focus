@@ -1,7 +1,7 @@
 import type { Exercise, ExerciseResult, ExerciseMetrics, DifficultyParams, SoundManager } from '../types.js';
 import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
-import { createExerciseTimer, jitteredInterval, showFeedback, formatTime, calculateCV, calculateLapseRate } from './helpers.js';
+import { createExerciseTimer, jitteredInterval, showFeedback, formatTime, calculateCV, calculateLapseRate, MIN_RT_MS } from './helpers.js';
 import { t } from '../core/i18n.js';
 
 const DURATION_MS = 180_000; // 3 minutes
@@ -108,6 +108,7 @@ export function createFlanker(level: number, params: DifficultyParams, sound: So
       row.appendChild(createArrowSpan(centerDir, true));
       row.appendChild(createNeutralSpan());
       row.appendChild(createNeutralSpan());
+      row.setAttribute('aria-label', `Neutral trial - center arrow points ${centerDir}`);
     } else {
       const flankerDir: Direction = congruent ? centerDir : (centerDir === 'left' ? 'right' : 'left');
       row.appendChild(createArrowSpan(flankerDir, false));
@@ -115,6 +116,7 @@ export function createFlanker(level: number, params: DifficultyParams, sound: So
       row.appendChild(createArrowSpan(centerDir, true));
       row.appendChild(createArrowSpan(flankerDir, false));
       row.appendChild(createArrowSpan(flankerDir, false));
+      row.setAttribute('aria-label', `${trialType} trial - center arrow points ${centerDir}, flankers point ${flankerDir}`);
     }
 
     stimulusArea.appendChild(row);
@@ -152,6 +154,10 @@ export function createFlanker(level: number, params: DifficultyParams, sound: So
     if (!started || paused || !awaitingResponse) return;
 
     const rt = Date.now() - stimulusShownAt;
+
+    // Ignore anticipatory responses (too fast to be genuine)
+    if (rt < MIN_RT_MS) return;
+
     awaitingResponse = false;
 
     const trial = trials[trials.length - 1];

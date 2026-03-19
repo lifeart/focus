@@ -52,6 +52,136 @@ function buildCelebrationData(
   return data;
 }
 
+/**
+ * Shared post-exercise state update logic used by both single and session modes.
+ * Must be called inside an `appState.updateData()` callback.
+ * Returns the level before XP addition (for level-up detection).
+ */
+function processExerciseResult(
+  d: import('../../types.js').AppData,
+  exId: ExerciseId,
+  result: ExerciseResult,
+  today: string,
+  xp: number,
+): void {
+  // Add result to history
+  d.exerciseHistory.push(result);
+
+  // Update progression
+  d.progression.totalXP += xp;
+  d.progression.totalFocusTimeMs += result.durationMs;
+  d.progression.totalSessionCount++;
+
+  if (exId === 'breathing') {
+    d.progression.breathingSessions++;
+  }
+
+  // Add activity day
+  if (!d.progression.activityDays.includes(today)) {
+    d.progression.activityDays.push(today);
+  }
+
+  // Update current streak
+  d.progression.currentStreak = getCurrentStreak(
+    d.progression.activityDays,
+    d.progression.streakFreezeUsedDays,
+  );
+  if (d.progression.currentStreak > d.progression.longestStreak) {
+    d.progression.longestStreak = d.progression.currentStreak;
+  }
+  d.progression.lastStreakCheckDate = today;
+
+  // Check freeze earning at 7-day milestones
+  const cs = d.progression.currentStreak;
+  if (
+    cs > 0 &&
+    cs % STREAK_FREEZE_EARN_INTERVAL === 0 &&
+    !d.progression.streakFreezeEarnedAt.includes(cs) &&
+    d.progression.streakFreezes < STREAK_FREEZE_MAX
+  ) {
+    d.progression.streakFreezes++;
+    d.progression.streakFreezeEarnedAt.push(cs);
+  }
+
+  // Check personal record
+  const prevRecord = d.progression.personalRecords[exId] || 0;
+  if (result.score > prevRecord) {
+    d.progression.personalRecords[exId] = result.score;
+    if (prevRecord > 0) {
+      d.progression.recordsBroken++;
+      appState.emit({ type: 'record-broken', exerciseId: exId, oldRecord: prevRecord, newRecord: result.score });
+    }
+  }
+
+  // Update difficulty
+  if (exId !== 'breathing' && exId !== 'pomodoro') {
+    d.difficulty[exId] = updateDifficulty(d.difficulty[exId], result.score);
+    const levelChange = d.difficulty[exId].lastLevelChange;
+    if (levelChange) {
+      try { sessionStorage.setItem(DIFFICULTY_CHANGE_KEY, levelChange); } catch {}
+    }
+  }
+
+  // Update weekly challenge progress
+  updateWeeklyChallengeProgress(d, result);
+
+  // Update daily challenge progress
+  const dc = d.progression.dailyChallenge;
+  if (dc && dc.date === today && !dc.completed) {
+    const updated = checkDailyChallengeProgress(dc, result, d.progression, d.exerciseHistory);
+    d.progression.dailyChallenge = updated;
+    if (updated.completed && !dc.completed) {
+      d.progression.totalXP += updated.xpReward;
+    }
+  }
+}
+
+/**
+ * Post-update logic: emit events, check badges/level-up.
+ * Called after `appState.updateData()` with `processExerciseResult`.
+ * Returns celebration data (or null).
+ */
+function postExerciseEmitAndBadges(
+  result: ExerciseResult,
+  levelBefore: number,
+  today: string,
+): { celebrationData: CelebrationData | null; levelAfter: number } {
+  // Emit daily challenge complete event if applicable
+  {
+    const latestData = appState.getData();
+    const dc = latestData.progression.dailyChallenge;
+    if (dc && dc.completed && dc.date === today) {
+      appState.emit({ type: 'daily-challenge-complete', challenge: dc });
+    }
+  }
+
+  appState.emit({ type: 'exercise-complete', result });
+
+  // Detect level-up and new badges
+  const updatedData = appState.getData();
+  const levelAfter = getLevel(updatedData.progression.totalXP);
+  const newBadges = checkBadges(updatedData.progression, updatedData.difficulty);
+
+  // Push newly earned badges into progression
+  if (newBadges.length > 0) {
+    appState.updateData((d2) => {
+      for (const badge of newBadges) {
+        d2.progression.earnedBadges.push(badge);
+      }
+    });
+    for (const badge of newBadges) {
+      appState.emit({ type: 'badge-earned', badge });
+    }
+  }
+
+  if (levelAfter > levelBefore) {
+    appState.emit({ type: 'level-up', newLevel: levelAfter, title: getLevelTitle(levelAfter) });
+  }
+
+  const celebrationData = buildCelebrationData(levelBefore, levelAfter, newBadges);
+  return { celebrationData, levelAfter };
+}
+
 function updateWeeklyChallengeProgress(d: import('../../types.js').AppData, result: ExerciseResult): void {
   const challenge = d.progression.weeklyChallenge;
   if (!challenge || challenge.progress >= challenge.target) return;
@@ -187,112 +317,12 @@ function renderSingleExercise(
       const levelBefore = getLevel(data.progression.totalXP);
 
       appState.updateData((d) => {
-        // Add result to history
-        d.exerciseHistory.push(result);
-
-        // Update progression
-        d.progression.totalXP += xp;
-        d.progression.totalFocusTimeMs += result.durationMs;
-        d.progression.totalSessionCount++;
-
-        if (exId === 'breathing') {
-          d.progression.breathingSessions++;
-        }
-
-        // Add activity day
-        if (!d.progression.activityDays.includes(today)) {
-          d.progression.activityDays.push(today);
-        }
-
-        // Update current streak
-        d.progression.currentStreak = getCurrentStreak(
-          d.progression.activityDays,
-          d.progression.streakFreezeUsedDays,
-        );
-        if (d.progression.currentStreak > d.progression.longestStreak) {
-          d.progression.longestStreak = d.progression.currentStreak;
-        }
-        d.progression.lastStreakCheckDate = today;
-
-        // Check freeze earning at 7-day milestones
-        const cs = d.progression.currentStreak;
-        if (
-          cs > 0 &&
-          cs % STREAK_FREEZE_EARN_INTERVAL === 0 &&
-          !d.progression.streakFreezeEarnedAt.includes(cs) &&
-          d.progression.streakFreezes < STREAK_FREEZE_MAX
-        ) {
-          d.progression.streakFreezes++;
-          d.progression.streakFreezeEarnedAt.push(cs);
-        }
-
-        // Check personal record
-        const prevRecord = d.progression.personalRecords[exId] || 0;
-        if (result.score > prevRecord) {
-          d.progression.personalRecords[exId] = result.score;
-          if (prevRecord > 0) {
-            d.progression.recordsBroken++;
-            appState.emit({ type: 'record-broken', exerciseId: exId, oldRecord: prevRecord, newRecord: result.score });
-          }
-        }
-
-        // Update difficulty
-        if (exId !== 'breathing' && exId !== 'pomodoro') {
-          d.difficulty[exId] = updateDifficulty(d.difficulty[exId], result.score);
-          const levelChange = d.difficulty[exId].lastLevelChange;
-          if (levelChange) {
-            try { sessionStorage.setItem(DIFFICULTY_CHANGE_KEY, levelChange); } catch {}
-          }
-        }
-
-        // Update weekly challenge progress
-        updateWeeklyChallengeProgress(d, result);
-
-        // Update daily challenge progress
-        const dc = d.progression.dailyChallenge;
-        if (dc && dc.date === today && !dc.completed) {
-          const updated = checkDailyChallengeProgress(dc, result, d.progression, d.exerciseHistory);
-          d.progression.dailyChallenge = updated;
-          if (updated.completed && !dc.completed) {
-            d.progression.totalXP += updated.xpReward;
-          }
-        }
+        processExerciseResult(d, exId, result, today, xp);
       });
 
-      // Emit daily challenge complete event if applicable
-      {
-        const latestData = appState.getData();
-        const dc = latestData.progression.dailyChallenge;
-        if (dc && dc.completed && dc.date === today) {
-          appState.emit({ type: 'daily-challenge-complete', challenge: dc });
-        }
-      }
-
-      appState.emit({ type: 'exercise-complete', result });
-
-      // Detect level-up and new badges
-      const updatedData = appState.getData();
-      const levelAfter = getLevel(updatedData.progression.totalXP);
-      const newBadges = checkBadges(updatedData.progression, updatedData.difficulty);
-
-      // Push newly earned badges into progression
-      if (newBadges.length > 0) {
-        appState.updateData((d2) => {
-          for (const badge of newBadges) {
-            d2.progression.earnedBadges.push(badge);
-          }
-        });
-        for (const badge of newBadges) {
-          appState.emit({ type: 'badge-earned', badge });
-        }
-      }
-
-      if (levelAfter > levelBefore) {
-        appState.emit({ type: 'level-up', newLevel: levelAfter, title: getLevelTitle(levelAfter) });
-      }
+      const { celebrationData } = postExerciseEmitAndBadges(result, levelBefore, today);
 
       // Store celebration data for results screen
-      const celebrationData = buildCelebrationData(levelBefore, levelAfter, newBadges);
       if (celebrationData) {
         try {
           sessionStorage.setItem(SESSION_CELEBRATIONS_KEY, JSON.stringify(celebrationData));
@@ -362,7 +392,7 @@ function renderSingleExercise(
     }
   }
 
-  startExercise();
+  startExercise().catch(console.error);
 
   return () => {
     if (exercise && !isFinished) {
@@ -535,106 +565,12 @@ function renderSessionMode(
 
       // Update state for this exercise
       appState.updateData((d) => {
-        d.exerciseHistory.push(result);
-        d.progression.totalXP += xp;
-        d.progression.totalFocusTimeMs += result.durationMs;
-        d.progression.totalSessionCount++;
-
-        if (exId === 'breathing') {
-          d.progression.breathingSessions++;
-        }
-
-        if (!d.progression.activityDays.includes(today)) {
-          d.progression.activityDays.push(today);
-        }
-
-        // Update current streak
-        d.progression.currentStreak = getCurrentStreak(
-          d.progression.activityDays,
-          d.progression.streakFreezeUsedDays,
-        );
-        if (d.progression.currentStreak > d.progression.longestStreak) {
-          d.progression.longestStreak = d.progression.currentStreak;
-        }
-        d.progression.lastStreakCheckDate = today;
-
-        // Check freeze earning at 7-day milestones
-        const cs2 = d.progression.currentStreak;
-        if (
-          cs2 > 0 &&
-          cs2 % STREAK_FREEZE_EARN_INTERVAL === 0 &&
-          !d.progression.streakFreezeEarnedAt.includes(cs2) &&
-          d.progression.streakFreezes < STREAK_FREEZE_MAX
-        ) {
-          d.progression.streakFreezes++;
-          d.progression.streakFreezeEarnedAt.push(cs2);
-        }
-
-        const prevRecord = d.progression.personalRecords[exId] || 0;
-        if (result.score > prevRecord) {
-          d.progression.personalRecords[exId] = result.score;
-          if (prevRecord > 0) {
-            d.progression.recordsBroken++;
-            appState.emit({ type: 'record-broken', exerciseId: exId, oldRecord: prevRecord, newRecord: result.score });
-          }
-        }
-
-        if (exId !== 'breathing' && exId !== 'pomodoro') {
-          d.difficulty[exId] = updateDifficulty(d.difficulty[exId], result.score);
-          const levelChange = d.difficulty[exId].lastLevelChange;
-          if (levelChange) {
-            try { sessionStorage.setItem(DIFFICULTY_CHANGE_KEY, levelChange); } catch {}
-          }
-        }
-
-        // Update weekly challenge progress
-        updateWeeklyChallengeProgress(d, result);
-
-        // Update daily challenge progress
-        const dc = d.progression.dailyChallenge;
-        if (dc && dc.date === today && !dc.completed) {
-          const updated = checkDailyChallengeProgress(dc, result, d.progression, d.exerciseHistory);
-          d.progression.dailyChallenge = updated;
-          if (updated.completed && !dc.completed) {
-            d.progression.totalXP += updated.xpReward;
-          }
-        }
+        processExerciseResult(d, exId, result, today, xp);
       });
 
-      // Emit daily challenge complete event if applicable
-      {
-        const latestSessionData = appState.getData();
-        const dc = latestSessionData.progression.dailyChallenge;
-        if (dc && dc.completed && dc.date === today) {
-          appState.emit({ type: 'daily-challenge-complete', challenge: dc });
-        }
-      }
-
-      appState.emit({ type: 'exercise-complete', result });
-
-      // Detect level-up and badges for celebration accumulation
-      const updatedSessionData = appState.getData();
-      const sessionLevelAfter = getLevel(updatedSessionData.progression.totalXP);
-      const sessionNewBadges = checkBadges(updatedSessionData.progression, updatedSessionData.difficulty);
-
-      // Push newly earned badges into progression
-      if (sessionNewBadges.length > 0) {
-        appState.updateData((d2) => {
-          for (const badge of sessionNewBadges) {
-            d2.progression.earnedBadges.push(badge);
-          }
-        });
-        for (const badge of sessionNewBadges) {
-          appState.emit({ type: 'badge-earned', badge });
-        }
-      }
-
-      if (sessionLevelAfter > sessionLevelBefore) {
-        appState.emit({ type: 'level-up', newLevel: sessionLevelAfter, title: getLevelTitle(sessionLevelAfter) });
-      }
+      const { celebrationData: exerciseCelebration } = postExerciseEmitAndBadges(result, sessionLevelBefore, today);
 
       // Accumulate celebration data (keep highest level-up, accumulate badges)
-      const exerciseCelebration = buildCelebrationData(sessionLevelBefore, sessionLevelAfter, sessionNewBadges);
       if (exerciseCelebration) {
         // Level-up: keep the latest (highest) one
         if (exerciseCelebration.levelUp) {
@@ -692,7 +628,7 @@ function renderSessionMode(
       }
     };
 
-    startThisExercise();
+    startThisExercise().catch(console.error);
   }
 
   // ── Start next exercise or finish session ──────────────────────────
@@ -911,7 +847,7 @@ function renderBaselineMode(
       }, 500);
     }
 
-    start();
+    start().catch(console.error);
   }
 
   function finishBaseline(): void {

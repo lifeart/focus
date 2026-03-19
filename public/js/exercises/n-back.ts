@@ -62,13 +62,16 @@ export function createNBack(level: number, params: DifficultyParams, sound: Soun
           const avoid = seq[i - nLevel];
           let lureLetter: string | null = null;
 
-          // Try N-1 lure first
-          if (i >= nLevel + 1 && seq[i - nLevel + 1] !== avoid) {
-            lureLetter = seq[i - nLevel + 1];
+          // Try N-1 lure first: letter from (nLevel-1) positions back
+          // Index is i - nLevel + 1; must be >= 0 AND < i (a previous position)
+          const nMinus1Idx = i - nLevel + 1;
+          if (nMinus1Idx >= 0 && nMinus1Idx < i && seq[nMinus1Idx] !== avoid) {
+            lureLetter = seq[nMinus1Idx];
           }
-          // Try N+1 lure
-          if (!lureLetter && i >= nLevel - 1 && nLevel >= 2 && seq[i - nLevel - 1] !== avoid) {
-            lureLetter = seq[i - nLevel - 1];
+          // Try N+1 lure: letter from (nLevel+1) positions back
+          const nPlus1Idx = i - nLevel - 1;
+          if (!lureLetter && nPlus1Idx >= 0 && seq[nPlus1Idx] !== avoid) {
+            lureLetter = seq[nPlus1Idx];
           }
 
           if (lureLetter) {

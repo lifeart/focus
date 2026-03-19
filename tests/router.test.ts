@@ -36,9 +36,10 @@ const containerEl = {
 
 // The router calls getContainer -> document.getElementById('app')
 // then creates a #router-view child.
-const routerViewEl = {
+const routerViewEl: Record<string, any> = {
   id: 'router-view',
   innerHTML: '',
+  setAttribute: vi.fn(),
 };
 
 const docMock = {

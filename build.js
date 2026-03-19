@@ -23,6 +23,10 @@ function copyHTML() {
     html = html.replace(/href="css\//g, 'href="');
     // Adjust JS path: js/bundle.js -> bundle.js
     html = html.replace('src="js/bundle.js"', 'src="bundle.js"');
+    // Add cache-busting timestamp to asset references
+    const timestamp = Date.now();
+    html = html.replace(/href="([^"]+\.css)"/g, `href="$1?v=${timestamp}"`);
+    html = html.replace('src="bundle.js"', `src="bundle.js?v=${timestamp}"`);
     fs.writeFileSync(dest, html);
     console.log("Copied index.html to dist/");
   } else {

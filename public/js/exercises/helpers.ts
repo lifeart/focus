@@ -2,6 +2,9 @@ import type { Disposables } from '../types.js';
 import { el } from '../ui/renderer.js';
 import { t } from '../core/i18n.js';
 
+// Minimum reaction time filter: responses under this threshold are anticipatory, not genuine
+export const MIN_RT_MS = 150;
+
 // Drift-corrected exercise timer
 export interface ExerciseTimer {
   start(): void;

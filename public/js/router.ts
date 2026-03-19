@@ -76,6 +76,8 @@ export function createRouter(container?: HTMLElement): Router {
     if (!rc) {
       rc = document.createElement('div');
       rc.id = 'router-view';
+      rc.setAttribute('role', 'main');
+      rc.setAttribute('aria-live', 'polite');
       // Insert at beginning so nav stays below
       appEl.prepend(rc);
     }
