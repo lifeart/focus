@@ -20,6 +20,26 @@ import { showToast } from '../components/toast.js';
 
 const DIFFICULTY_CHANGE_KEY = 'focus:difficulty_change';
 
+function updateWeeklyChallengeProgress(d: import('../../types.js').AppData, result: ExerciseResult): void {
+  const challenge = d.progression.weeklyChallenge;
+  if (!challenge || challenge.progress >= challenge.target) return;
+
+  switch (challenge.type) {
+    case 'perfect-exercises':
+      if (result.score >= 90) challenge.progress++;
+      break;
+    case 'total-sessions':
+      challenge.progress++;
+      break;
+    case 'focus-time':
+      challenge.progress = Math.floor(d.progression.totalFocusTimeMs / 60000);
+      break;
+    case 'no-errors':
+      if (result.score >= 90) challenge.progress++;
+      break;
+  }
+}
+
 function createExercise(exerciseId: ExerciseId): Exercise | null {
   const data = appState.getData();
   const diffState = data.difficulty[exerciseId];
@@ -167,6 +187,9 @@ function renderSingleExercise(
             try { sessionStorage.setItem(DIFFICULTY_CHANGE_KEY, levelChange); } catch {}
           }
         }
+
+        // Update weekly challenge progress
+        updateWeeklyChallengeProgress(d, result);
       });
 
       appState.emit({ type: 'exercise-complete', result });
@@ -427,6 +450,9 @@ function renderSessionMode(
             try { sessionStorage.setItem(DIFFICULTY_CHANGE_KEY, levelChange); } catch {}
           }
         }
+
+        // Update weekly challenge progress
+        updateWeeklyChallengeProgress(d, result);
       });
 
       appState.emit({ type: 'exercise-complete', result });

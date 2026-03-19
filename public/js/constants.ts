@@ -414,7 +414,7 @@ export const WEEKLY_CHALLENGE_TYPES: Omit<WeeklyChallenge, 'progress' | 'weekSta
     xpReward: 50,
   },
   {
-    description: 'Пройдите 5 упражнений без единой ошибки',
+    description: 'Пройдите 5 упражнений с точностью 90%+',
     type: 'no-errors',
     target: 5,
     xpReward: 75,
