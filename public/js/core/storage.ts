@@ -33,8 +33,28 @@ export function migrateSchema(data: any): AppData {
         data.progression.streakFreezeEarnedAt = [];
       }
     }
+    // Ensure all progression fields have defaults
+    const prog = data.progression;
+    prog.totalXP = prog.totalXP ?? 0;
+    prog.level = prog.level ?? 1;
+    prog.longestStreak = prog.longestStreak ?? 0;
+    prog.totalSessionCount = prog.totalSessionCount ?? 0;
+    prog.totalFocusTimeMs = prog.totalFocusTimeMs ?? 0;
+    prog.breathingSessions = prog.breathingSessions ?? 0;
+    prog.recordsBroken = prog.recordsBroken ?? 0;
+    prog.earnedBadges = prog.earnedBadges ?? [];
+    prog.activityDays = prog.activityDays ?? [];
+    prog.personalRecords = prog.personalRecords ?? {
+      'go-no-go': 0, 'n-back': 0, 'flanker': 0,
+      'visual-search': 0, 'breathing': 0, 'pomodoro': 0,
+    };
+
     data.version = 2;
   }
+
+  // Ensure history arrays exist
+  data.history = data.history ?? [];
+  data.exerciseHistory = data.exerciseHistory ?? [];
 
   // Ensure locale exists (added in i18n migration)
   if (data.settings && !data.settings.locale) {
@@ -103,6 +123,13 @@ export function importData(json: string): AppData | null {
       console.warn('[storage] Import data missing required fields');
       return null;
     }
+    // Validate critical field types
+    if (!Array.isArray(parsed.history)) parsed.history = [];
+    if (!Array.isArray(parsed.exerciseHistory)) parsed.exerciseHistory = [];
+    if (typeof parsed.progression !== 'object' || parsed.progression === null) return null;
+    if (!Array.isArray(parsed.progression.activityDays)) parsed.progression.activityDays = [];
+    if (!Array.isArray(parsed.progression.earnedBadges)) parsed.progression.earnedBadges = [];
+    if (typeof parsed.progression.totalXP !== 'number') parsed.progression.totalXP = 0;
     return migrateSchema(parsed);
   } catch (e) {
     console.warn('[storage] Failed to parse import data:', e);

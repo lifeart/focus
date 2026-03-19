@@ -193,9 +193,14 @@ function updateWeeklyChallengeProgress(d: import('../../types.js').AppData, resu
     case 'total-sessions':
       challenge.progress++;
       break;
-    case 'focus-time':
-      challenge.progress = Math.floor(d.progression.totalFocusTimeMs / 60000);
+    case 'focus-time': {
+      const weekStart = challenge.weekStart || '';
+      const weekMs = d.exerciseHistory
+        .filter(r => new Date(r.timestamp).toISOString().slice(0, 10) >= weekStart)
+        .reduce((sum, r) => sum + r.durationMs, 0);
+      challenge.progress = Math.floor(weekMs / 60000);
       break;
+    }
     case 'no-errors':
       if (result.score >= 90) challenge.progress++;
       break;
