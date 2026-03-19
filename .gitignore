@@ -2,3 +2,7 @@ node_modules/
 dist/
 *.map
 .DS_Store
+
+# Audit screenshots
+*.png
+.playwright-mcp/

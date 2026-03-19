@@ -28,7 +28,7 @@ function buildCelebrationData(
   levelAfter: number,
   newBadges: EarnedBadge[],
 ): CelebrationData | null {
-  const data: CelebrationData = { badges: newBadges };
+  const data: CelebrationData = { badges: newBadges, currentLevel: levelAfter };
 
   if (levelAfter > levelBefore) {
     // Determine unlocked content at the new level
@@ -834,8 +834,8 @@ function renderBaselineMode(
       if (exerciseFinished || isFinished) return;
       exercise.start();
 
-      // Baseline uses 60s fixed duration
-      const durationMs = 60_000;
+      // Baseline uses 90s fixed duration for reliable signal trials
+      const durationMs = 90_000;
       let elapsed = 0;
       const autoFinish = disposables.setInterval(() => {
         if (exerciseFinished || isFinished) { clearInterval(autoFinish); return; }
