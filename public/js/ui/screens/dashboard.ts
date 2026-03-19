@@ -1,8 +1,8 @@
-import type { ScreenRender, ExerciseResult, Mood } from '../../types.js';
+import type { ScreenRender, ExerciseResult, Mood, DailyChallenge } from '../../types.js';
 import { el, addClass, clear } from '../renderer.js';
 import { appState } from '../../main.js';
-import { EXERCISE_CONFIGS, SESSION_MOOD_KEY } from '../../constants.js';
-import { getLevel, getLevelTitle, getXPProgress, updateStreak, getScoreTier, generateWeeklyChallenge, checkWeeklyChallenge } from '../../core/progression.js';
+import { EXERCISE_CONFIGS, SESSION_MOOD_KEY, SESSION_TYPE_KEY, XP_SOURCES } from '../../constants.js';
+import { getLevel, getLevelTitle, getXPProgress, updateStreak, getScoreTier, generateWeeklyChallenge, checkWeeklyChallenge, generateDailyChallenge } from '../../core/progression.js';
 import { renderAvatar } from '../components/avatar.js';
 import { renderStreakDisplay } from '../components/streak-display.js';
 import { renderProgressBar } from '../components/progress-bar.js';
@@ -99,7 +99,7 @@ function showMoodModal(disposables: ReturnType<typeof createDisposables>): void 
     disposables.addListener(btn, 'click', () => {
       sessionStorage.setItem(SESSION_MOOD_KEY, opt.mood);
       overlay.remove();
-      window.location.hash = '#/exercises';
+      window.location.hash = '#/session';
     });
 
     options.appendChild(btn);
@@ -225,6 +225,82 @@ export const renderDashboard: ScreenRender = (container, _params) => {
   disposables.addCleanup(cleanupDaily);
   grid.appendChild(dailyCard);
 
+  // ── 4b. Daily Login Bonus ──────────────────────────────────────────
+
+  const todayIso = new Date().toISOString().slice(0, 10);
+  if (progression.lastDailyBonusDate !== todayIso) {
+    const bonusAmount = XP_SOURCES.dailyLoginBonus;
+    appState.updateData((d) => {
+      if (d.progression.lastDailyBonusDate !== todayIso) {
+        d.progression.totalXP += bonusAmount;
+        d.progression.lastDailyBonusDate = todayIso;
+      }
+    });
+    appState.emit({ type: 'daily-bonus', amount: bonusAmount });
+
+    // Show brief bonus animation
+    const bonusBanner = el('div', { className: 'daily-bonus-banner' }, [
+      t('dashboard.dailyBonus', { xp: bonusAmount }),
+    ]);
+    grid.appendChild(bonusBanner);
+    // Auto-remove after 3 seconds
+    disposables.setTimeout(() => {
+      bonusBanner.remove();
+    }, 3000);
+  }
+
+  // ── 4c. Daily Challenge card ───────────────────────────────────────
+
+  // Auto-generate daily challenge if none exists or if it's a new day
+  {
+    let dailyChallenge = progression.dailyChallenge;
+    if (!dailyChallenge || dailyChallenge.date !== todayIso) {
+      // Compute previous day's challenge type for "no repeat" filter
+      const previousType = dailyChallenge?.type;
+      // Check user history for difficulty guard
+      const hasHistory = exerciseHistory.length > 0;
+      const nBackLevel = data.difficulty['n-back']?.currentLevel || 1;
+      dailyChallenge = generateDailyChallenge(todayIso, previousType, hasHistory, nBackLevel);
+      appState.updateData((d) => {
+        d.progression.dailyChallenge = dailyChallenge as DailyChallenge;
+      });
+    }
+
+    // Daily challenge description key mapping
+    const dailyChallengeDescKey = `dailyChallenge.${
+      dailyChallenge.type === 'high-score-exercise' ? 'highScoreExercise'
+      : dailyChallenge.type === 'complete-exercises' ? 'completeExercises'
+      : dailyChallenge.type === 'beat-personal-best' ? 'beatPersonalBest'
+      : dailyChallenge.type === 'train-minutes' ? 'trainMinutes'
+      : dailyChallenge.type === 'multi-exercise-score' ? 'multiExerciseScore'
+      : dailyChallenge.type === 'specific-exercise' ? 'specificExercise'
+      : dailyChallenge.type === 'low-lapse-rate' ? 'lowLapseRate'
+      : dailyChallenge.type === 'breathing-session' ? 'breathingSession'
+      : dailyChallenge.type === 'fast-reaction' ? 'fastReaction'
+      : dailyChallenge.type === 'n-back-level' ? 'nBackLevel'
+      : dailyChallenge.type === 'streak-day' ? 'streakDay'
+      : 'accuracyStreak'
+    }` as any;
+
+    const dailyChallengeCard = el('div', { className: 'card' }, [
+      el('div', { className: 'card__header' }, [
+        el('h3', { className: 'card__title' }, [t('dashboard.dailyChallenge')]),
+        dailyChallenge.completed
+          ? el('span', { className: 'badge badge--success' }, [t('dashboard.dailyChallengeComplete')])
+          : el('span', { className: 'badge badge--primary' }, [`${dailyChallenge.progress}/${dailyChallenge.target}`]),
+      ]),
+      el('p', { className: 'card__subtitle' }, [t(dailyChallengeDescKey)]),
+    ]);
+
+    const cleanupDailyChallenge = renderProgressBar(dailyChallengeCard, {
+      value: dailyChallenge.progress,
+      max: dailyChallenge.target,
+      showPercent: false,
+    });
+    disposables.addCleanup(cleanupDailyChallenge);
+    grid.appendChild(dailyChallengeCard);
+  }
+
   // ── 5. Weekly Challenge card ──────────────────────────────────────
 
   // Auto-generate weekly challenge if none exists or if it's a new week
@@ -283,23 +359,57 @@ export const renderDashboard: ScreenRender = (container, _params) => {
     grid.appendChild(baselineCard);
   }
 
-  // ── 6. Quick Start button ─────────────────────────────────────────
+  // ── 6. Session type selector ─────────────────────────────────────
 
-  const quickStartCard = el('div', { className: 'card bento-grid__item--wide' });
-  const startBtn = el('button', { className: 'btn btn--primary btn--lg btn--full' }, [
-    t('dashboard.startTraining'),
+  const quickStartCard = el('div', { className: 'card bento-grid__item--wide' }, [
+    el('h3', { className: 'card__title' }, [t('dashboard.chooseSession')]),
   ]);
 
-  disposables.addListener(startBtn, 'click', () => {
-    const hasMood = sessionStorage.getItem(SESSION_MOOD_KEY);
-    if (!hasMood) {
-      showMoodModal(disposables);
-    } else {
-      window.location.hash = '#/exercises';
-    }
+  // Quick Start — primary, prominent
+  const quickBtn = el('button', { className: 'btn btn--primary btn--lg btn--full session-type-btn' }, [
+    el('span', { className: 'session-type-btn__icon' }, ['\u26A1']),
+    el('span', { className: 'session-type-btn__text' }, [
+      el('span', { className: 'session-type-btn__label' }, [t('dashboard.sessionQuick')]),
+      el('span', { className: 'session-type-btn__desc' }, [t('dashboard.sessionQuickDesc')]),
+    ]),
+  ]);
+
+  disposables.addListener(quickBtn, 'click', () => {
+    sessionStorage.setItem(SESSION_TYPE_KEY, 'quick');
+    window.location.hash = '#/session';
   });
 
-  quickStartCard.appendChild(startBtn);
+  // Standard — secondary
+  const standardBtn = el('button', { className: 'btn btn--secondary btn--full session-type-btn' }, [
+    el('span', { className: 'session-type-btn__icon' }, ['\uD83C\uDFAF']),
+    el('span', { className: 'session-type-btn__text' }, [
+      el('span', { className: 'session-type-btn__label' }, [t('dashboard.sessionStandard')]),
+      el('span', { className: 'session-type-btn__desc' }, [t('dashboard.sessionStandardDesc')]),
+    ]),
+  ]);
+
+  disposables.addListener(standardBtn, 'click', () => {
+    sessionStorage.setItem(SESSION_TYPE_KEY, 'standard');
+    showMoodModal(disposables);
+  });
+
+  // Deep Focus — secondary
+  const deepBtn = el('button', { className: 'btn btn--secondary btn--full session-type-btn' }, [
+    el('span', { className: 'session-type-btn__icon' }, ['\uD83E\uDDE0']),
+    el('span', { className: 'session-type-btn__text' }, [
+      el('span', { className: 'session-type-btn__label' }, [t('dashboard.sessionDeep')]),
+      el('span', { className: 'session-type-btn__desc' }, [t('dashboard.sessionDeepDesc')]),
+    ]),
+  ]);
+
+  disposables.addListener(deepBtn, 'click', () => {
+    sessionStorage.setItem(SESSION_TYPE_KEY, 'deep');
+    showMoodModal(disposables);
+  });
+
+  quickStartCard.appendChild(quickBtn);
+  quickStartCard.appendChild(standardBtn);
+  quickStartCard.appendChild(deepBtn);
   grid.appendChild(quickStartCard);
 
   // ── 7. Recent Activity card ───────────────────────────────────────

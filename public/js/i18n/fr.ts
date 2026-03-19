@@ -148,6 +148,23 @@ export const fr: TranslationTable = {
   'challenge.focusTime': 'Accumulez 30 minutes de concentration cette semaine',
   'challenge.noErrors': 'R\u00E9alisez 5 exercices avec 90%+ de pr\u00E9cision',
 
+  // Daily challenges
+  'dashboard.dailyChallenge': 'D\u00E9fi du jour',
+  'dashboard.dailyChallengeComplete': 'Termin\u00E9 !',
+  'dashboard.dailyBonus': '+{xp} XP bonus quotidien !',
+  'dailyChallenge.highScoreExercise': 'Obtenez 90%+ au Go/No-Go',
+  'dailyChallenge.completeExercises': 'Compl\u00E9tez 2 exercices',
+  'dailyChallenge.beatPersonalBest': 'Battez votre record personnel dans un exercice',
+  'dailyChallenge.trainMinutes': 'Entra\u00EEnez-vous 5 minutes au total',
+  'dailyChallenge.multiExerciseScore': 'Obtenez 80%+ dans 3 exercices diff\u00E9rents',
+  'dailyChallenge.specificExercise': 'Compl\u00E9tez une session N-Back',
+  'dailyChallenge.lowLapseRate': 'Moins de 5% de pertes d\'attention',
+  'dailyChallenge.breathingSession': 'Compl\u00E9tez une session de respiration',
+  'dailyChallenge.fastReaction': 'Temps de r\u00E9action moyen sous 350ms au Go/No-Go',
+  'dailyChallenge.nBackLevel': 'Compl\u00E9tez N-Back au niveau 3+',
+  'dailyChallenge.streakDay': 'Entra\u00EEnez-vous aujourd\'hui pour votre s\u00E9rie',
+  'dailyChallenge.accuracyStreak': 'Obtenez 80%+ sur 3 exercices cons\u00E9cutifs',
+
   // Dashboard
   'dashboard.greeting': 'Bonjour, {name} !',
   'dashboard.defaultName': 'Ami',
@@ -163,6 +180,13 @@ export const fr: TranslationTable = {
   'dashboard.emptyBadge': 'Plus qu\u2019une session pour votre premier badge !',
   'dashboard.emptyHint': 'Appuyez sur le bouton ci-dessus et commencez votre chemin vers la ma\u00EEtrise !',
   'dashboard.moodQuestion': 'Comment te sens-tu ?',
+  'dashboard.chooseSession': 'Choisis ta session',
+  'dashboard.sessionQuick': 'D\u00E9marrage rapide',
+  'dashboard.sessionQuickDesc': '1 exercice \u00B7 ~1 min',
+  'dashboard.sessionStandard': 'Standard',
+  'dashboard.sessionStandardDesc': '3-4 exercices \u00B7 ~5 min',
+  'dashboard.sessionDeep': 'Focus profond',
+  'dashboard.sessionDeepDesc': '5-6 exercices \u00B7 ~10 min',
 
   // Time ago
   'time.justNow': '\u00E0 l\u2019instant',

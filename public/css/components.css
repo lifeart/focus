@@ -483,3 +483,34 @@
   animation: shimmer 1.5s ease-in-out infinite;
   border-radius: var(--radius-md);
 }
+
+/* ── Session Type Buttons ── */
+.session-type-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  text-align: left;
+  padding: var(--space-md) var(--space-lg);
+  margin-top: var(--space-sm);
+}
+
+.session-type-btn__icon {
+  font-size: var(--text-xl);
+  flex-shrink: 0;
+}
+
+.session-type-btn__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.session-type-btn__label {
+  font-weight: 600;
+  font-size: var(--text-base);
+}
+
+.session-type-btn__desc {
+  font-size: var(--text-sm);
+  opacity: 0.7;
+}

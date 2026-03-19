@@ -148,6 +148,23 @@ export const de: TranslationTable = {
   'challenge.focusTime': 'Sammle 30 Minuten Fokuszeit diese Woche',
   'challenge.noErrors': 'Schlie\u00DFe 5 \u00DCbungen mit 90%+ Genauigkeit ab',
 
+  // Daily challenges
+  'dashboard.dailyChallenge': 'Tagesherausforderung',
+  'dashboard.dailyChallengeComplete': 'Geschafft!',
+  'dashboard.dailyBonus': '+{xp} XP Tagesbonus!',
+  'dailyChallenge.highScoreExercise': 'Erreiche 90%+ bei Go/No-Go',
+  'dailyChallenge.completeExercises': 'Schlie\u00DFe 2 \u00DCbungen ab',
+  'dailyChallenge.beatPersonalBest': 'Brich deinen pers\u00F6nlichen Rekord in einer \u00DCbung',
+  'dailyChallenge.trainMinutes': 'Trainiere 5 Minuten insgesamt',
+  'dailyChallenge.multiExerciseScore': 'Erreiche 80%+ in 3 verschiedenen \u00DCbungen',
+  'dailyChallenge.specificExercise': 'Absolviere eine N-Back-Sitzung',
+  'dailyChallenge.lowLapseRate': 'Weniger als 5% Aufmerksamkeitsl\u00FCcken',
+  'dailyChallenge.breathingSession': 'Absolviere eine Atem\u00FCbung',
+  'dailyChallenge.fastReaction': 'Durchschnittliche Reaktionszeit unter 350ms bei Go/No-Go',
+  'dailyChallenge.nBackLevel': 'Absolviere N-Back auf Stufe 3+',
+  'dailyChallenge.streakDay': 'Trainiere heute f\u00FCr deine Serie',
+  'dailyChallenge.accuracyStreak': 'Erreiche 80%+ bei 3 \u00DCbungen hintereinander',
+
   // Dashboard
   'dashboard.greeting': 'Hallo, {name}!',
   'dashboard.defaultName': 'Freund',
@@ -163,6 +180,13 @@ export const de: TranslationTable = {
   'dashboard.emptyBadge': 'Nur noch eine Sitzung bis zum ersten Abzeichen!',
   'dashboard.emptyHint': 'Tippe oben und beginne deinen Weg zur Meisterschaft!',
   'dashboard.moodQuestion': 'Wie f\u00FChlst du dich?',
+  'dashboard.chooseSession': 'W\u00E4hle deine Sitzung',
+  'dashboard.sessionQuick': 'Schnellstart',
+  'dashboard.sessionQuickDesc': '1 \u00DCbung \u00B7 ~1 Min',
+  'dashboard.sessionStandard': 'Standard',
+  'dashboard.sessionStandardDesc': '3-4 \u00DCbungen \u00B7 ~5 Min',
+  'dashboard.sessionDeep': 'Tiefenfokus',
+  'dashboard.sessionDeepDesc': '5-6 \u00DCbungen \u00B7 ~10 Min',
 
   // Time ago
   'time.justNow': 'gerade eben',

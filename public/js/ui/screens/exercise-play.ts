@@ -10,13 +10,13 @@ import { createVisualSearch } from '../../exercises/visual-search.js';
 import { createBreathing } from '../../exercises/breathing.js';
 import { createPomodoro } from '../../exercises/pomodoro.js';
 import { appState, getSoundManager } from '../../main.js';
-import { EXERCISE_CONFIGS, SESSION_RESULT_KEY, SESSION_BONUS_KEY, SESSION_CELEBRATIONS_KEY } from '../../constants.js';
-import { calculateXP, getCurrentStreak, getLevel, getLevelTitle, checkBadges } from '../../core/progression.js';
+import { EXERCISE_CONFIGS, SESSION_RESULT_KEY, SESSION_BONUS_KEY, SESSION_CELEBRATIONS_KEY, SESSION_TYPE_KEY } from '../../constants.js';
+import { calculateXP, getCurrentStreak, getLevel, getLevelTitle, checkBadges, checkDailyChallengeProgress } from '../../core/progression.js';
 import { STREAK_FREEZE_MAX, STREAK_FREEZE_EARN_INTERVAL, THEME_UNLOCK_LEVELS, AVATAR_UNLOCK_LEVELS } from '../../constants.js';
 import type { CelebrationData } from '../components/celebration-overlay.js';
 import type { EarnedBadge, ThemeId } from '../../types.js';
 import { updateDifficulty } from '../../core/adaptive.js';
-import { createSessionPlan } from '../../core/session.js';
+import { createSessionByType } from '../../core/session.js';
 import { t } from '../../core/i18n.js';
 import { getBaselineExercises, getBaselineParams, createBaselineResult } from '../../core/baseline.js';
 import { showToast } from '../components/toast.js';
@@ -247,7 +247,26 @@ function renderSingleExercise(
 
         // Update weekly challenge progress
         updateWeeklyChallengeProgress(d, result);
+
+        // Update daily challenge progress
+        const dc = d.progression.dailyChallenge;
+        if (dc && dc.date === today && !dc.completed) {
+          const updated = checkDailyChallengeProgress(dc, result, d.progression, d.exerciseHistory);
+          d.progression.dailyChallenge = updated;
+          if (updated.completed && !dc.completed) {
+            d.progression.totalXP += updated.xpReward;
+          }
+        }
       });
+
+      // Emit daily challenge complete event if applicable
+      {
+        const latestData = appState.getData();
+        const dc = latestData.progression.dailyChallenge;
+        if (dc && dc.completed && dc.date === today) {
+          appState.emit({ type: 'daily-challenge-complete', challenge: dc });
+        }
+      }
 
       appState.emit({ type: 'exercise-complete', result });
 
@@ -359,7 +378,8 @@ function renderSessionMode(
   disposables: ReturnType<typeof createDisposables>,
 ): () => void {
   const data = appState.getData();
-  const plan = createSessionPlan(data.difficulty, data.exerciseHistory);
+  const sessionType = (sessionStorage.getItem(SESSION_TYPE_KEY) || 'standard') as import('../../types.js').SessionType;
+  const plan = createSessionByType(sessionType, data.difficulty, data.exerciseHistory);
   const sessionStartedAt = Date.now();
   const exerciseResults: ExerciseResult[] = [];
   let currentExerciseIndex = -1; // -1 = showing plan
@@ -569,7 +589,26 @@ function renderSessionMode(
 
         // Update weekly challenge progress
         updateWeeklyChallengeProgress(d, result);
+
+        // Update daily challenge progress
+        const dc = d.progression.dailyChallenge;
+        if (dc && dc.date === today && !dc.completed) {
+          const updated = checkDailyChallengeProgress(dc, result, d.progression, d.exerciseHistory);
+          d.progression.dailyChallenge = updated;
+          if (updated.completed && !dc.completed) {
+            d.progression.totalXP += updated.xpReward;
+          }
+        }
       });
+
+      // Emit daily challenge complete event if applicable
+      {
+        const latestSessionData = appState.getData();
+        const dc = latestSessionData.progression.dailyChallenge;
+        if (dc && dc.completed && dc.date === today) {
+          appState.emit({ type: 'daily-challenge-complete', challenge: dc });
+        }
+      }
 
       appState.emit({ type: 'exercise-complete', result });
 
@@ -669,8 +708,8 @@ function renderSessionMode(
 
     const nextExId = plan.exercises[currentExerciseIndex];
 
-    if (currentExerciseIndex === 0) {
-      // First exercise - start directly
+    if (currentExerciseIndex === 0 || sessionType === 'quick') {
+      // First exercise or quick session - start directly
       runExercise(nextExId);
     } else {
       // Show transition
@@ -682,6 +721,7 @@ function renderSessionMode(
 
   function finishSession(): void {
     isFinished = true;
+    try { sessionStorage.removeItem(SESSION_TYPE_KEY); } catch {}
 
     const totalXP = exerciseResults.reduce((sum, r) => sum + r.xpEarned, 0);
     const sessionResult: SessionResult = {
@@ -738,10 +778,15 @@ function renderSessionMode(
 
   // ── Start ──────────────────────────────────────────────────────────
 
-  showPlan();
+  if (sessionType === 'quick') {
+    startNextExercise(); // Skip plan screen, go straight to exercise
+  } else {
+    showPlan();
+  }
 
   return () => {
     isFinished = true;
+    try { sessionStorage.removeItem(SESSION_TYPE_KEY); } catch {}
     if (cleanupCurrent) cleanupCurrent();
   };
 }

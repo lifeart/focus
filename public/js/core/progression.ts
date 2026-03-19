@@ -5,6 +5,7 @@ import type {
   DifficultyState,
   EarnedBadge,
   WeeklyChallenge,
+  DailyChallenge,
   BadgeTier,
   ScoreTier,
 } from '../types.js';
@@ -13,6 +14,7 @@ import {
   SCORE_TIERS,
   BADGE_DEFINITIONS,
   WEEKLY_CHALLENGE_TYPES,
+  DAILY_CHALLENGE_TYPES,
   STREAK_FREEZE_MAX,
   STREAK_FREEZE_EARN_INTERVAL,
 } from '../constants.js';
@@ -391,4 +393,224 @@ export function getScoreTier(score: number): { label: string; tier: ScoreTier; s
   const firstTier = SCORE_TIERS[0];
   const keySuffix = TIER_KEY_MAP[firstTier.tier] || firstTier.tier;
   return { label: t(`scoreTier.${keySuffix}` as any), tier: firstTier.tier, showPercent: firstTier.showPercent };
+}
+
+// ─── Daily Challenge ──────────────────────────────────────────────────
+
+/**
+ * Simple deterministic hash of a date string (djb2).
+ * Returns a non-negative integer.
+ */
+export function dateHash(dateStr: string): number {
+  let hash = 0;
+  for (let i = 0; i < dateStr.length; i++) {
+    hash = ((hash << 5) - hash + dateStr.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+/**
+ * Get exercises completed today from the full exercise history.
+ * Iterates from the end for performance (recent entries are at the end).
+ */
+export function getTodayExercises(exerciseHistory: ExerciseResult[], dateStr?: string): ExerciseResult[] {
+  const todayStr = dateStr || new Date().toISOString().slice(0, 10);
+  const results: ExerciseResult[] = [];
+  for (let i = exerciseHistory.length - 1; i >= 0; i--) {
+    const rDate = new Date(exerciseHistory[i].timestamp).toISOString().slice(0, 10);
+    if (rDate === todayStr) {
+      results.push(exerciseHistory[i]);
+    } else if (rDate < todayStr) {
+      // Past entries, no need to continue
+      break;
+    }
+  }
+  return results;
+}
+
+/**
+ * Generate a deterministic daily challenge for a given date.
+ * Applies "no repeat from yesterday" filter and difficulty guard for hard challenges.
+ */
+export function generateDailyChallenge(
+  dateStr: string,
+  previousChallengeType?: string,
+  userHasHistory?: boolean,
+  userNBackLevel?: number,
+): DailyChallenge {
+  const hash = dateHash(dateStr);
+
+  // Filter out hard challenges if user is new (no history)
+  let templates = DAILY_CHALLENGE_TYPES.filter((tmpl) => {
+    if (tmpl.hard && !userHasHistory) return false;
+    // n-back-level: require user has reached at least level 2
+    if (tmpl.type === 'n-back-level' && (userNBackLevel || 1) < 2) return false;
+    // fast-reaction: require user has some go-no-go history
+    if (tmpl.type === 'fast-reaction' && !userHasHistory) return false;
+    return true;
+  });
+
+  // "No repeat from yesterday" filter
+  if (previousChallengeType && templates.length > 1) {
+    const filtered = templates.filter((tmpl) => tmpl.type !== previousChallengeType);
+    if (filtered.length > 0) {
+      templates = filtered;
+    }
+  }
+
+  const idx = hash % templates.length;
+  const template = templates[idx];
+  return {
+    type: template.type,
+    target: template.target,
+    progress: 0,
+    date: dateStr,
+    xpReward: template.xpReward,
+    completed: false,
+    exerciseId: template.exerciseId,
+    threshold: template.threshold,
+  };
+}
+
+/**
+ * Check daily challenge progress after an exercise completes.
+ * Returns a new DailyChallenge with updated progress/completed state.
+ */
+export function checkDailyChallengeProgress(
+  challenge: DailyChallenge,
+  result: ExerciseResult,
+  progression: ProgressionData,
+  exerciseHistory: ExerciseResult[],
+): DailyChallenge {
+  if (challenge.completed) return challenge;
+
+  const todayStr = challenge.date;
+  const todayExercises = getTodayExercises(exerciseHistory, todayStr);
+  let updated = { ...challenge };
+
+  switch (challenge.type) {
+    case 'high-score-exercise':
+      if (
+        result.exerciseId === challenge.exerciseId &&
+        result.score >= (challenge.threshold || 90)
+      ) {
+        updated.progress = updated.target;
+      }
+      break;
+
+    case 'complete-exercises':
+      // Count today's exercises (result is already in exerciseHistory at this point)
+      updated.progress = Math.min(todayExercises.length, updated.target);
+      break;
+
+    case 'beat-personal-best': {
+      const prevRecord = progression.personalRecords[result.exerciseId] || 0;
+      // The record may have already been updated; check if result beat the OLD record
+      // We detect this by checking if recordsBroken increased or if result.score > prevRecord
+      if (result.score > prevRecord || result.score === progression.personalRecords[result.exerciseId]) {
+        // Check if the record was actually beaten (prevRecord was > 0 and score exceeds it)
+        // Since personalRecords is already updated by finishExercise, we check if
+        // the stored record equals result.score and there was a previous record
+        if (prevRecord > 0 && result.score > prevRecord) {
+          updated.progress = updated.target;
+        }
+      }
+      break;
+    }
+
+    case 'train-minutes': {
+      // Sum today's exercise durations in minutes
+      let totalMs = 0;
+      for (const ex of todayExercises) {
+        totalMs += ex.durationMs;
+      }
+      updated.progress = Math.min(Math.floor(totalMs / 60000), updated.target);
+      break;
+    }
+
+    case 'multi-exercise-score': {
+      // Count distinct exerciseIds with score >= threshold completed today
+      const threshold = challenge.threshold || 80;
+      const qualifying = new Set<string>();
+      for (const ex of todayExercises) {
+        if (ex.score >= threshold) {
+          qualifying.add(ex.exerciseId);
+        }
+      }
+      updated.progress = Math.min(qualifying.size, updated.target);
+      break;
+    }
+
+    case 'specific-exercise':
+      if (result.exerciseId === challenge.exerciseId) {
+        updated.progress = updated.target;
+      }
+      break;
+
+    case 'low-lapse-rate':
+      if (
+        result.metrics.lapseRate != null &&
+        result.metrics.lapseRate < (challenge.threshold || 5) / 100
+      ) {
+        updated.progress = updated.target;
+      }
+      break;
+
+    case 'breathing-session':
+      if (result.exerciseId === 'breathing') {
+        updated.progress = updated.target;
+      }
+      break;
+
+    case 'fast-reaction':
+      if (
+        result.exerciseId === 'go-no-go' &&
+        result.metrics.meanRT != null &&
+        result.metrics.meanRT < (challenge.threshold || 350)
+      ) {
+        updated.progress = updated.target;
+      }
+      break;
+
+    case 'n-back-level':
+      if (
+        result.exerciseId === 'n-back' &&
+        result.level >= (challenge.threshold || 3)
+      ) {
+        updated.progress = updated.target;
+      }
+      break;
+
+    case 'streak-day':
+      // Any exercise completion counts
+      updated.progress = updated.target;
+      break;
+
+    case 'accuracy-streak': {
+      // Track consecutive 80%+ scores in today's exercises
+      const threshold = challenge.threshold || 80;
+      let consecutiveCount = 0;
+      let maxConsecutive = 0;
+      // todayExercises is in reverse order (most recent first), so reverse it
+      const ordered = [...todayExercises].reverse();
+      for (const ex of ordered) {
+        if (ex.score >= threshold) {
+          consecutiveCount++;
+          if (consecutiveCount > maxConsecutive) {
+            maxConsecutive = consecutiveCount;
+          }
+        } else {
+          consecutiveCount = 0;
+        }
+      }
+      updated.progress = Math.min(maxConsecutive, updated.target);
+      break;
+    }
+  }
+
+  if (updated.progress >= updated.target) {
+    updated.completed = true;
+  }
+
+  return updated;
 }

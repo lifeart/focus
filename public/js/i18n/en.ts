@@ -148,6 +148,23 @@ export const en: TranslationTable = {
   'challenge.focusTime': 'Accumulate 30 minutes of focus this week',
   'challenge.noErrors': 'Complete 5 exercises with 90%+ accuracy',
 
+  // Daily challenges
+  'dashboard.dailyChallenge': 'Daily Challenge',
+  'dashboard.dailyChallengeComplete': 'Done!',
+  'dashboard.dailyBonus': '+{xp} XP daily bonus!',
+  'dailyChallenge.highScoreExercise': 'Score 90%+ on Go/No-Go',
+  'dailyChallenge.completeExercises': 'Complete 2 exercises',
+  'dailyChallenge.beatPersonalBest': 'Beat your personal best in any exercise',
+  'dailyChallenge.trainMinutes': 'Train for 5 minutes total',
+  'dailyChallenge.multiExerciseScore': 'Score 80%+ on 3 different exercises',
+  'dailyChallenge.specificExercise': 'Complete an N-Back session',
+  'dailyChallenge.lowLapseRate': 'Achieve less than 5% attention lapses',
+  'dailyChallenge.breathingSession': 'Complete a breathing session',
+  'dailyChallenge.fastReaction': 'Average reaction time under 350ms in Go/No-Go',
+  'dailyChallenge.nBackLevel': 'Complete N-Back at level 3+',
+  'dailyChallenge.streakDay': 'Train today to keep your streak',
+  'dailyChallenge.accuracyStreak': 'Score 80%+ on 3 exercises in a row',
+
   // Dashboard
   'dashboard.greeting': 'Hi, {name}!',
   'dashboard.defaultName': 'Friend',
@@ -163,6 +180,13 @@ export const en: TranslationTable = {
   'dashboard.emptyBadge': 'One session until your first badge!',
   'dashboard.emptyHint': 'Tap the button above and start your journey to mastery!',
   'dashboard.moodQuestion': 'How are you feeling?',
+  'dashboard.chooseSession': 'Choose your session',
+  'dashboard.sessionQuick': 'Quick Start',
+  'dashboard.sessionQuickDesc': '1 exercise \u00B7 ~1 min',
+  'dashboard.sessionStandard': 'Standard',
+  'dashboard.sessionStandardDesc': '3-4 exercises \u00B7 ~5 min',
+  'dashboard.sessionDeep': 'Deep Focus',
+  'dashboard.sessionDeepDesc': '5-6 exercises \u00B7 ~10 min',
 
   // Time ago
   'time.justNow': 'just now',

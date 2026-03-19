@@ -148,6 +148,23 @@ export const ru: TranslationTable = {
   'challenge.focusTime': 'Накопите 30 минут фокусировки за неделю',
   'challenge.noErrors': 'Пройдите 5 упражнений с точностью 90%+',
 
+  // Daily challenges
+  'dashboard.dailyChallenge': 'Ежедневный вызов',
+  'dashboard.dailyChallengeComplete': 'Выполнено!',
+  'dashboard.dailyBonus': '+{xp} XP бонус за вход!',
+  'dailyChallenge.highScoreExercise': 'Наберите 90%+ в Go/No-Go',
+  'dailyChallenge.completeExercises': 'Пройдите 2 упражнения',
+  'dailyChallenge.beatPersonalBest': 'Побейте личный рекорд в любом упражнении',
+  'dailyChallenge.trainMinutes': 'Тренируйтесь 5 минут',
+  'dailyChallenge.multiExerciseScore': 'Наберите 80%+ в 3 разных упражнениях',
+  'dailyChallenge.specificExercise': 'Пройдите сессию N-Back',
+  'dailyChallenge.lowLapseRate': 'Менее 5% провалов внимания',
+  'dailyChallenge.breathingSession': 'Пройдите дыхательную сессию',
+  'dailyChallenge.fastReaction': 'Среднее время реакции менее 350мс в Go/No-Go',
+  'dailyChallenge.nBackLevel': 'Пройдите N-Back на уровне 3+',
+  'dailyChallenge.streakDay': 'Потренируйтесь сегодня для серии',
+  'dailyChallenge.accuracyStreak': 'Наберите 80%+ в 3 упражнениях подряд',
+
   // Dashboard
   'dashboard.greeting': 'Привет, {name}!',
   'dashboard.defaultName': 'Друг',
@@ -163,6 +180,13 @@ export const ru: TranslationTable = {
   'dashboard.emptyBadge': 'До первого бейджа одна сессия!',
   'dashboard.emptyHint': 'Нажми кнопку выше и начни свой путь к мастерству!',
   'dashboard.moodQuestion': 'Как ты себя чувствуешь?',
+  'dashboard.chooseSession': 'Выберите сессию',
+  'dashboard.sessionQuick': 'Быстрая',
+  'dashboard.sessionQuickDesc': '1 упражнение \u00B7 ~1 мин',
+  'dashboard.sessionStandard': 'Стандартная',
+  'dashboard.sessionStandardDesc': '3-4 упражнения \u00B7 ~5 мин',
+  'dashboard.sessionDeep': 'Глубокий фокус',
+  'dashboard.sessionDeepDesc': '5-6 упражнений \u00B7 ~10 мин',
 
   // Time ago
   'time.justNow': 'только что',

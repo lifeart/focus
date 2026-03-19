@@ -11,6 +11,8 @@ import type {
   WeeklyChallenge,
   BadgeTier,
   Locale,
+  SessionType,
+  DailyChallengeType,
 } from './types.js';
 
 // ─── Storage key & version ───────────────────────────────────────────
@@ -21,7 +23,20 @@ export const SESSION_BONUS_KEY = 'focus:last_bonus_event';
 export const SESSION_MOOD_KEY = 'focus:session_mood';
 export const SESSION_POST_MOOD_KEY = 'focus:post_session_mood';
 export const SESSION_CELEBRATIONS_KEY = 'focus:celebrations';
+export const SESSION_TYPE_KEY = 'focus:session_type';
 export const CURRENT_DATA_VERSION = 2;
+
+// ─── Session type configs ──────────────────────────────────────────
+export const SESSION_TYPE_CONFIG: Record<SessionType, {
+  exerciseCount: { min: number; max: number };
+  estimatedMinutes: number;
+  skipMoodModal: boolean;
+  skipPlanScreen: boolean;
+}> = {
+  quick:    { exerciseCount: { min: 1, max: 1 }, estimatedMinutes: 1, skipMoodModal: true, skipPlanScreen: true },
+  standard: { exerciseCount: { min: 3, max: 4 }, estimatedMinutes: 5, skipMoodModal: false, skipPlanScreen: false },
+  deep:     { exerciseCount: { min: 5, max: 6 }, estimatedMinutes: 10, skipMoodModal: false, skipPlanScreen: false },
+};
 
 // ─── Streak freeze constants ────────────────────────────────────────
 export const STREAK_FREEZE_MAX = 3;
@@ -244,6 +259,8 @@ export const XP_SOURCES = {
   recordBroken: 30,
   weeklyChallengeComplete: 50,
   bonusEvent: 10,
+  dailyChallengeComplete: 20,  // base; actual varies 15-30
+  dailyLoginBonus: 10,
 } as const;
 
 // ─── XP required per level ───────────────────────────────────────────
@@ -429,4 +446,33 @@ export const WEEKLY_CHALLENGE_TYPES: Omit<WeeklyChallenge, 'progress' | 'weekSta
     target: 5,
     xpReward: 75,
   },
+];
+
+// ─── Daily challenge templates (12 types) ───────────────────────────
+
+export interface DailyChallengeTemplate {
+  type: DailyChallengeType;
+  target: number;
+  xpReward: number;
+  exerciseId?: ExerciseId;
+  threshold?: number;
+  hard?: boolean; // difficulty guard: requires user history/level
+}
+
+export const DAILY_CHALLENGE_TYPES: DailyChallengeTemplate[] = [
+  // Easy
+  { type: 'complete-exercises',  target: 2,  xpReward: 15 },
+  { type: 'train-minutes',      target: 5,  xpReward: 15 },
+  { type: 'specific-exercise',  target: 1,  xpReward: 15, exerciseId: 'n-back' },
+  { type: 'breathing-session',  target: 1,  xpReward: 15 },
+  { type: 'streak-day',         target: 1,  xpReward: 15 },
+  // Medium
+  { type: 'high-score-exercise', target: 1,  xpReward: 20, exerciseId: 'go-no-go', threshold: 90 },
+  { type: 'n-back-level',       target: 1,  xpReward: 20, threshold: 3, hard: true },
+  // Hard
+  { type: 'beat-personal-best', target: 1,  xpReward: 30, hard: true },
+  { type: 'multi-exercise-score', target: 3, xpReward: 25, threshold: 80 },
+  { type: 'low-lapse-rate',     target: 1,  xpReward: 25, threshold: 5 },
+  { type: 'fast-reaction',      target: 1,  xpReward: 25, exerciseId: 'go-no-go', threshold: 350, hard: true },
+  { type: 'accuracy-streak',    target: 3,  xpReward: 25, threshold: 80 },
 ];

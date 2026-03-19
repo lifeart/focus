@@ -115,6 +115,23 @@ export interface TranslationTable {
   'challenge.focusTime': string;
   'challenge.noErrors': string;
 
+  // Daily challenges
+  'dashboard.dailyChallenge': string;
+  'dashboard.dailyChallengeComplete': string;
+  'dashboard.dailyBonus': string;
+  'dailyChallenge.highScoreExercise': string;
+  'dailyChallenge.completeExercises': string;
+  'dailyChallenge.beatPersonalBest': string;
+  'dailyChallenge.trainMinutes': string;
+  'dailyChallenge.multiExerciseScore': string;
+  'dailyChallenge.specificExercise': string;
+  'dailyChallenge.lowLapseRate': string;
+  'dailyChallenge.breathingSession': string;
+  'dailyChallenge.fastReaction': string;
+  'dailyChallenge.nBackLevel': string;
+  'dailyChallenge.streakDay': string;
+  'dailyChallenge.accuracyStreak': string;
+
   // Dashboard
   'dashboard.greeting': string;
   'dashboard.defaultName': string;
@@ -130,6 +147,13 @@ export interface TranslationTable {
   'dashboard.emptyBadge': string;
   'dashboard.emptyHint': string;
   'dashboard.moodQuestion': string;
+  'dashboard.chooseSession': string;
+  'dashboard.sessionQuick': string;
+  'dashboard.sessionQuickDesc': string;
+  'dashboard.sessionStandard': string;
+  'dashboard.sessionStandardDesc': string;
+  'dashboard.sessionDeep': string;
+  'dashboard.sessionDeepDesc': string;
 
   // Time ago
   'time.justNow': string;

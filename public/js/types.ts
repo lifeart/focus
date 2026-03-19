@@ -18,6 +18,9 @@ export type BadgeId =
 // Mood types for mood check
 export type Mood = 'energized' | 'calm' | 'tired' | 'stressed';
 
+// Session type
+export type SessionType = 'quick' | 'standard' | 'deep';
+
 // Theme ID
 export type ThemeId = 'dark' | 'light' | 'ocean' | 'sunset' | 'forest' | 'amoled';
 
@@ -146,6 +149,9 @@ export interface ProgressionData {
   recordsBroken: number; // total times a record was broken
   // Weekly
   weeklyChallenge?: WeeklyChallenge;
+  // Daily
+  dailyChallenge?: DailyChallenge;
+  lastDailyBonusDate?: string;  // ISO date of last login bonus
   totalSessionCount: number;
   totalFocusTimeMs: number;
   breathingSessions: number;
@@ -163,6 +169,34 @@ export interface BadgeDefinition {
   description: Record<BadgeTier, string>;
   icon: string;
   condition: Record<BadgeTier, number>; // threshold values
+}
+
+// Daily challenge types (12 types — no 'no-pause-session')
+export type DailyChallengeType =
+  | 'high-score-exercise'    // Score X%+ on a specific exercise
+  | 'complete-exercises'     // Complete N exercises
+  | 'beat-personal-best'    // Beat personal best in any exercise
+  | 'train-minutes'         // Train for N minutes total today
+  | 'multi-exercise-score'  // Score X%+ on N different exercises
+  | 'specific-exercise'     // Complete a specific exercise
+  | 'low-lapse-rate'        // Achieve <X% attention lapses
+  | 'breathing-session'     // Complete a breathing session
+  | 'fast-reaction'         // Average RT under X ms in Go/No-Go
+  | 'n-back-level'          // Complete N-Back at level N+
+  | 'streak-day'            // Train on a streak day (just show up)
+  | 'accuracy-streak'       // Get 3 exercises in a row with 80%+
+  ;
+
+export interface DailyChallenge {
+  type: DailyChallengeType;
+  target: number;
+  progress: number;
+  date: string;          // ISO date string (YYYY-MM-DD)
+  xpReward: number;      // 15-30
+  completed: boolean;
+  // Optional context for parameterized challenges
+  exerciseId?: ExerciseId;
+  threshold?: number;     // e.g. 90 for "score 90%+"
 }
 
 export interface WeeklyChallenge {
@@ -222,7 +256,9 @@ export type AppEvent =
   | { type: 'data-reset' }
   | { type: 'weekly-challenge-complete'; challenge: WeeklyChallenge }
   | { type: 'streak-freeze-used'; date: string; remainingFreezes: number }
-  | { type: 'streak-lost'; previousStreak: number };
+  | { type: 'streak-lost'; previousStreak: number }
+  | { type: 'daily-challenge-complete'; challenge: DailyChallenge }
+  | { type: 'daily-bonus'; amount: number };
 
 // Event listener type
 export type EventListener<T extends AppEvent['type']> = (event: Extract<AppEvent, { type: T }>) => void;
