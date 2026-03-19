@@ -344,6 +344,14 @@ export const es: TranslationTable = {
   // Streak
   'streak.daysOf': '{done} de {goal} d\u00EDas',
   'streak.bestStreak': 'Mejor racha: {n} {unit}',
+  'streak.current': 'Racha de {n} d\u00EDas',
+  'streak.currentZero': '\u00A1Comienza tu racha!',
+  'streak.freezes': '{n} de {max} congelaciones de racha',
+  'streak.freezeEarned': '\u00A1Congelaci\u00F3n de racha obtenida!',
+  'streak.saved': '\u00A1Racha salvada!',
+  'streak.atRisk': 'Mant\u00E9n tu racha \u2014 \u00A1entrena hoy!',
+  'streak.lost': 'Racha perdida. \u00A1Comienza una nueva!',
+  'dashboard.streak': 'Racha',
 
   // Calendar months
   'month.0': 'Enero',

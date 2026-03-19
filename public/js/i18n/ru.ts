@@ -344,6 +344,14 @@ export const ru: TranslationTable = {
   // Streak
   'streak.daysOf': '{done} из {goal} дней',
   'streak.bestStreak': 'Лучшая серия: {n} {unit}',
+  'streak.current': 'Серия: {n} {unit}',
+  'streak.currentZero': 'Начни серию!',
+  'streak.freezes': '{n} из {max} заморозок серии',
+  'streak.freezeEarned': 'Заморозка получена!',
+  'streak.saved': 'Серия сохранена!',
+  'streak.atRisk': 'Сохрани серию \u2014 тренируйся сегодня!',
+  'streak.lost': 'Серия потеряна. Начни заново!',
+  'dashboard.streak': 'Серия',
 
   // Calendar months
   'month.0': 'Январь',

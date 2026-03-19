@@ -179,6 +179,20 @@ export const renderDashboard: ScreenRender = (container, _params) => {
 
   const streakInfo = updateStreak(progression.activityDays);
   const weekDays = getCurrentWeekDays(progression.activityDays);
+
+  // Compute streak display flags
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const hasTrainedToday = progression.activityDays.includes(todayStr);
+  const streakSaved = sessionStorage.getItem('focus:streak_saved') === '1';
+  const streakLost = sessionStorage.getItem('focus:streak_lost') === '1';
+  const streakAtRisk = progression.currentStreak > 0 && !hasTrainedToday && progression.streakFreezes === 0;
+
+  // Clear one-time flags after reading
+  try {
+    sessionStorage.removeItem('focus:streak_saved');
+    sessionStorage.removeItem('focus:streak_lost');
+  } catch {}
+
   const weeklyCard = el('div', { className: 'card bento-grid__item--wide' }, [
     el('h3', { className: 'card__title' }, [t('dashboard.weeklyGoal')]),
   ]);
@@ -186,6 +200,11 @@ export const renderDashboard: ScreenRender = (container, _params) => {
     weekDays,
     weeklyGoal: 5,
     longestStreak: streakInfo.longestStreak,
+    currentStreak: progression.currentStreak,
+    streakFreezes: progression.streakFreezes,
+    streakSaved,
+    streakLost,
+    streakAtRisk,
   });
   disposables.addCleanup(cleanupStreak);
   grid.appendChild(weeklyCard);

@@ -134,6 +134,11 @@ export interface ProgressionData {
   // Streak
   activityDays: string[]; // ISO date strings of days with activity
   longestStreak: number;
+  currentStreak: number;
+  streakFreezes: number; // 0-3
+  streakFreezeUsedDays: string[]; // ISO dates when freeze consumed
+  lastStreakCheckDate: string;
+  streakFreezeEarnedAt: number[]; // streak milestones where freezes were earned
   // Badges
   earnedBadges: EarnedBadge[];
   // Personal records
@@ -215,7 +220,9 @@ export type AppEvent =
   | { type: 'profile-updated'; profile: UserProfile }
   | { type: 'data-imported' }
   | { type: 'data-reset' }
-  | { type: 'weekly-challenge-complete'; challenge: WeeklyChallenge };
+  | { type: 'weekly-challenge-complete'; challenge: WeeklyChallenge }
+  | { type: 'streak-freeze-used'; date: string; remainingFreezes: number }
+  | { type: 'streak-lost'; previousStreak: number };
 
 // Event listener type
 export type EventListener<T extends AppEvent['type']> = (event: Extract<AppEvent, { type: T }>) => void;

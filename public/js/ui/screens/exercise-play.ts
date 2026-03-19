@@ -11,7 +11,8 @@ import { createBreathing } from '../../exercises/breathing.js';
 import { createPomodoro } from '../../exercises/pomodoro.js';
 import { appState, getSoundManager } from '../../main.js';
 import { EXERCISE_CONFIGS, SESSION_RESULT_KEY, SESSION_BONUS_KEY } from '../../constants.js';
-import { calculateXP } from '../../core/progression.js';
+import { calculateXP, getCurrentStreak } from '../../core/progression.js';
+import { STREAK_FREEZE_MAX, STREAK_FREEZE_EARN_INTERVAL } from '../../constants.js';
 import { updateDifficulty } from '../../core/adaptive.js';
 import { createSessionPlan } from '../../core/session.js';
 import { t } from '../../core/i18n.js';
@@ -167,6 +168,28 @@ function renderSingleExercise(
         // Add activity day
         if (!d.progression.activityDays.includes(today)) {
           d.progression.activityDays.push(today);
+        }
+
+        // Update current streak
+        d.progression.currentStreak = getCurrentStreak(
+          d.progression.activityDays,
+          d.progression.streakFreezeUsedDays,
+        );
+        if (d.progression.currentStreak > d.progression.longestStreak) {
+          d.progression.longestStreak = d.progression.currentStreak;
+        }
+        d.progression.lastStreakCheckDate = today;
+
+        // Check freeze earning at 7-day milestones
+        const cs = d.progression.currentStreak;
+        if (
+          cs > 0 &&
+          cs % STREAK_FREEZE_EARN_INTERVAL === 0 &&
+          !d.progression.streakFreezeEarnedAt.includes(cs) &&
+          d.progression.streakFreezes < STREAK_FREEZE_MAX
+        ) {
+          d.progression.streakFreezes++;
+          d.progression.streakFreezeEarnedAt.push(cs);
         }
 
         // Check personal record
@@ -432,6 +455,28 @@ function renderSessionMode(
 
         if (!d.progression.activityDays.includes(today)) {
           d.progression.activityDays.push(today);
+        }
+
+        // Update current streak
+        d.progression.currentStreak = getCurrentStreak(
+          d.progression.activityDays,
+          d.progression.streakFreezeUsedDays,
+        );
+        if (d.progression.currentStreak > d.progression.longestStreak) {
+          d.progression.longestStreak = d.progression.currentStreak;
+        }
+        d.progression.lastStreakCheckDate = today;
+
+        // Check freeze earning at 7-day milestones
+        const cs2 = d.progression.currentStreak;
+        if (
+          cs2 > 0 &&
+          cs2 % STREAK_FREEZE_EARN_INTERVAL === 0 &&
+          !d.progression.streakFreezeEarnedAt.includes(cs2) &&
+          d.progression.streakFreezes < STREAK_FREEZE_MAX
+        ) {
+          d.progression.streakFreezes++;
+          d.progression.streakFreezeEarnedAt.push(cs2);
         }
 
         const prevRecord = d.progression.personalRecords[exId] || 0;

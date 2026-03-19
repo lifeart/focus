@@ -11,7 +11,29 @@ export function migrateSchema(data: any): AppData {
   // if (data.version < 3) { /* migrate v2 -> v3 */ data.version = 3; }
 
   if (!data.version) {
-    data.version = CURRENT_DATA_VERSION;
+    data.version = 1;
+  }
+
+  // v1 -> v2: Add streak freeze fields
+  if (data.version < 2) {
+    if (data.progression) {
+      if (data.progression.currentStreak === undefined) {
+        data.progression.currentStreak = 0;
+      }
+      if (data.progression.streakFreezes === undefined) {
+        data.progression.streakFreezes = 0;
+      }
+      if (!data.progression.streakFreezeUsedDays) {
+        data.progression.streakFreezeUsedDays = [];
+      }
+      if (!data.progression.lastStreakCheckDate) {
+        data.progression.lastStreakCheckDate = '';
+      }
+      if (!data.progression.streakFreezeEarnedAt) {
+        data.progression.streakFreezeEarnedAt = [];
+      }
+    }
+    data.version = 2;
   }
 
   // Ensure locale exists (added in i18n migration)

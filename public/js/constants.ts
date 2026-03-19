@@ -20,7 +20,11 @@ export const SESSION_RESULT_KEY = 'focus:last_exercise_result';
 export const SESSION_BONUS_KEY = 'focus:last_bonus_event';
 export const SESSION_MOOD_KEY = 'focus:session_mood';
 export const SESSION_POST_MOOD_KEY = 'focus:post_session_mood';
-export const CURRENT_DATA_VERSION = 1;
+export const CURRENT_DATA_VERSION = 2;
+
+// ─── Streak freeze constants ────────────────────────────────────────
+export const STREAK_FREEZE_MAX = 3;
+export const STREAK_FREEZE_EARN_INTERVAL = 7;
 
 // ─── Exercise configs ────────────────────────────────────────────────
 
@@ -324,6 +328,11 @@ export function createDefaultAppData(): AppData {
       level: 1,
       activityDays: [],
       longestStreak: 0,
+      currentStreak: 0,
+      streakFreezes: 0,
+      streakFreezeUsedDays: [],
+      lastStreakCheckDate: '',
+      streakFreezeEarnedAt: [],
       earnedBadges: [],
       personalRecords: {
         'go-no-go': 0,

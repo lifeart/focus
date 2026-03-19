@@ -7,7 +7,7 @@ import { createDefaultAppData } from '../public/js/constants';
 describe('createDefaultAppData', () => {
   it('creates valid default data', () => {
     const data = createDefaultAppData();
-    expect(data.version).toBe(1);
+    expect(data.version).toBe(2);
     expect(data.onboardingComplete).toBe(false);
     expect(data.profile.name).toBe('');
     expect(data.settings.dailyGoalMinutes).toBe(10);

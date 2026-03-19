@@ -4,6 +4,7 @@ import { createSoundManager } from './core/sound.js';
 import { createRouter } from './router.js';
 import { renderNav, updateNavActive } from './ui/components/nav.js';
 import { initI18n, detectLocale } from './core/i18n.js';
+import { checkAndUpdateStreak } from './core/progression.js';
 
 // Screens
 import { renderDashboard } from './ui/screens/dashboard.js';
@@ -71,6 +72,31 @@ function init(): void {
     initI18n(detectedLocale);
   } else {
     initI18n(data.settings.locale || 'en');
+  }
+
+  // Check and update streak on app open (once per session)
+  const STREAK_CHECKED_KEY = 'focus:streak_checked';
+  if (!sessionStorage.getItem(STREAK_CHECKED_KEY)) {
+    const currentData2 = appState.getData();
+    if (currentData2.onboardingComplete) {
+      const streakResult = checkAndUpdateStreak(currentData2.progression);
+      appState.updateData((d) => {
+        d.progression.currentStreak = currentData2.progression.currentStreak;
+        d.progression.streakFreezes = currentData2.progression.streakFreezes;
+        d.progression.streakFreezeUsedDays = currentData2.progression.streakFreezeUsedDays;
+        d.progression.lastStreakCheckDate = currentData2.progression.lastStreakCheckDate;
+        d.progression.longestStreak = currentData2.progression.longestStreak;
+        d.progression.streakFreezeEarnedAt = currentData2.progression.streakFreezeEarnedAt;
+      });
+      appState.flush();
+      if (streakResult.freezeConsumed) {
+        try { sessionStorage.setItem('focus:streak_saved', '1'); } catch {}
+      }
+      if (streakResult.streakLost) {
+        try { sessionStorage.setItem('focus:streak_lost', '1'); } catch {}
+      }
+    }
+    try { sessionStorage.setItem(STREAK_CHECKED_KEY, '1'); } catch {}
   }
 
   const appEl = document.getElementById('app');

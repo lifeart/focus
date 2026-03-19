@@ -311,6 +311,14 @@ export interface TranslationTable {
   // Streak
   'streak.daysOf': string;
   'streak.bestStreak': string;
+  'streak.current': string;
+  'streak.currentZero': string;
+  'streak.freezes': string;
+  'streak.freezeEarned': string;
+  'streak.saved': string;
+  'streak.atRisk': string;
+  'streak.lost': string;
+  'dashboard.streak': string;
 
   // Calendar months
   'month.0': string; 'month.1': string; 'month.2': string; 'month.3': string;

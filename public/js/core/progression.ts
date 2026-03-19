@@ -13,6 +13,8 @@ import {
   SCORE_TIERS,
   BADGE_DEFINITIONS,
   WEEKLY_CHALLENGE_TYPES,
+  STREAK_FREEZE_MAX,
+  STREAK_FREEZE_EARN_INTERVAL,
 } from '../constants.js';
 import { t } from './i18n.js';
 
@@ -118,6 +120,165 @@ export function updateStreak(activityDays: string[]): {
   }
 
   return { currentWeekDays, weeklyGoalMet, longestStreak };
+}
+
+// ─── Current Streak ─────────────────────────────────────────────────
+
+/**
+ * Walk backward from today counting consecutive days covered by
+ * activity or freeze usage. If today is not yet covered, start from yesterday.
+ */
+export function getCurrentStreak(activityDays: string[], freezeUsedDays: string[]): number {
+  const coveredSet = new Set<string>([...activityDays, ...freezeUsedDays]);
+  if (coveredSet.size === 0) return 0;
+
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+
+  // Determine start date: today if covered, else yesterday
+  let cursor: Date;
+  if (coveredSet.has(todayStr)) {
+    cursor = new Date(today);
+  } else {
+    cursor = new Date(today);
+    cursor.setDate(cursor.getDate() - 1);
+    const yesterdayStr = cursor.toISOString().slice(0, 10);
+    if (!coveredSet.has(yesterdayStr)) return 0;
+  }
+
+  let streak = 0;
+  while (true) {
+    const dateStr = cursor.toISOString().slice(0, 10);
+    if (!coveredSet.has(dateStr)) break;
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
+/**
+ * Called on app open. Processes gap days between lastStreakCheckDate and today.
+ * Consumes freezes for gap days, resets streak if freezes run out.
+ * Also checks for freeze earning at 7-day milestones.
+ */
+export function checkAndUpdateStreak(progression: ProgressionData): {
+  freezeConsumed: boolean;
+  streakLost: boolean;
+  currentStreak: number;
+  freezeEarned: boolean;
+  newFreezeCount: number;
+} {
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+
+  // Already checked today — no-op
+  if (progression.lastStreakCheckDate === todayStr) {
+    return {
+      freezeConsumed: false,
+      streakLost: false,
+      currentStreak: progression.currentStreak,
+      freezeEarned: false,
+      newFreezeCount: progression.streakFreezes,
+    };
+  }
+
+  let freezeConsumed = false;
+  let streakLost = false;
+
+  // First run — no gap penalties
+  if (!progression.lastStreakCheckDate) {
+    progression.lastStreakCheckDate = todayStr;
+    progression.currentStreak = getCurrentStreak(
+      progression.activityDays,
+      progression.streakFreezeUsedDays,
+    );
+    // Check freeze earning
+    const { earned, newFreezeCount } = checkFreezeEarning(progression);
+    return {
+      freezeConsumed: false,
+      streakLost: false,
+      currentStreak: progression.currentStreak,
+      freezeEarned: earned,
+      newFreezeCount,
+    };
+  }
+
+  // Find gap days between lastStreakCheckDate (exclusive) and today (exclusive)
+  const lastCheck = new Date(progression.lastStreakCheckDate + 'T00:00:00Z');
+  const gapDays: string[] = [];
+  const cursor = new Date(lastCheck);
+  cursor.setDate(cursor.getDate() + 1);
+
+  while (cursor.toISOString().slice(0, 10) < todayStr) {
+    const dateStr = cursor.toISOString().slice(0, 10);
+    // Only count as gap if no activity that day
+    if (!progression.activityDays.includes(dateStr)) {
+      gapDays.push(dateStr);
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  // Process gaps: consume freezes or break streak
+  for (const gapDay of gapDays) {
+    if (progression.streakFreezes > 0 && progression.currentStreak > 0) {
+      // Consume a freeze
+      progression.streakFreezes--;
+      progression.streakFreezeUsedDays.push(gapDay);
+      freezeConsumed = true;
+    } else if (progression.currentStreak > 0) {
+      // No freezes left — streak breaks
+      streakLost = true;
+      progression.currentStreak = 0;
+      break;
+    }
+  }
+
+  // Recalculate current streak
+  progression.currentStreak = getCurrentStreak(
+    progression.activityDays,
+    progression.streakFreezeUsedDays,
+  );
+
+  // Update longest streak
+  if (progression.currentStreak > progression.longestStreak) {
+    progression.longestStreak = progression.currentStreak;
+  }
+
+  // Check freeze earning
+  const { earned, newFreezeCount } = checkFreezeEarning(progression);
+
+  // Update last check date
+  progression.lastStreakCheckDate = todayStr;
+
+  return {
+    freezeConsumed,
+    streakLost,
+    currentStreak: progression.currentStreak,
+    freezeEarned: earned,
+    newFreezeCount,
+  };
+}
+
+function checkFreezeEarning(progression: ProgressionData): {
+  earned: boolean;
+  newFreezeCount: number;
+} {
+  let earned = false;
+  const streak = progression.currentStreak;
+
+  // Check every 7-day milestone
+  if (streak > 0 && streak % STREAK_FREEZE_EARN_INTERVAL === 0) {
+    if (
+      !progression.streakFreezeEarnedAt.includes(streak) &&
+      progression.streakFreezes < STREAK_FREEZE_MAX
+    ) {
+      progression.streakFreezes++;
+      progression.streakFreezeEarnedAt.push(streak);
+      earned = true;
+    }
+  }
+
+  return { earned, newFreezeCount: progression.streakFreezes };
 }
 
 // ─── Badges ──────────────────────────────────────────────────────────

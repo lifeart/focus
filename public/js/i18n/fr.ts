@@ -344,6 +344,14 @@ export const fr: TranslationTable = {
   // Streak
   'streak.daysOf': '{done} sur {goal} jours',
   'streak.bestStreak': 'Meilleure s\u00E9rie : {n} {unit}',
+  'streak.current': 'S\u00E9rie de {n} jours',
+  'streak.currentZero': 'Commence ta s\u00E9rie !',
+  'streak.freezes': '{n} sur {max} gels de s\u00E9rie',
+  'streak.freezeEarned': 'Gel de s\u00E9rie obtenu !',
+  'streak.saved': 'S\u00E9rie sauv\u00E9e !',
+  'streak.atRisk': 'Garde ta s\u00E9rie \u2014 entra\u00EEne-toi aujourd\u2019hui !',
+  'streak.lost': 'S\u00E9rie perdue. Recommence !',
+  'dashboard.streak': 'S\u00E9rie',
 
   // Calendar months
   'month.0': 'Janvier',

@@ -344,6 +344,14 @@ export const de: TranslationTable = {
   // Streak
   'streak.daysOf': '{done} von {goal} Tagen',
   'streak.bestStreak': 'Beste Serie: {n} {unit}',
+  'streak.current': '{n}-Tage-Serie',
+  'streak.currentZero': 'Starte deine Serie!',
+  'streak.freezes': '{n} von {max} Serienpausen',
+  'streak.freezeEarned': 'Serienpause verdient!',
+  'streak.saved': 'Serie gerettet!',
+  'streak.atRisk': 'Behalte deine Serie \u2014 trainiere heute!',
+  'streak.lost': 'Serie verloren. Starte eine neue!',
+  'dashboard.streak': 'Serie',
 
   // Calendar months
   'month.0': 'Januar',
