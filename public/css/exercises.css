@@ -871,6 +871,7 @@
 
 .gng-stimulus--go {
   border-radius: var(--radius-full);
+  background-color: var(--gng-go-color, var(--success));
   background: radial-gradient(circle at 35% 35%,
     color-mix(in srgb, var(--gng-go-color, var(--success)) 80%, white),
     var(--gng-go-color, var(--success)));
@@ -943,4 +944,25 @@
 .vs-item--red-square {
   background: var(--error);
   border-radius: 0;
+}
+
+/* ============================================
+   Responsive — Small Screen Overrides
+   ============================================ */
+
+/* Flanker arrow overflow fix for narrow screens */
+@media (max-width: 480px) {
+  .flanker-arrow { font-size: 2rem; }
+  .flanker-arrow--target { transform: scale(1.2); }
+}
+@media (max-width: 360px) {
+  .flanker-arrow { font-size: 1.5rem; }
+}
+
+/* Visual Search item sizing on narrow screens */
+@media (max-width: 360px) {
+  .vs-item {
+    width: var(--vs-item-size, 36px);
+    height: var(--vs-item-size, 36px);
+  }
 }
