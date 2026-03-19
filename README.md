@@ -1,156 +1,100 @@
-# Focus -- Attention Training
+# Focus
 
-Focus is a progressive web app (PWA) for cognitive training targeting attention, working memory, and inhibitory control. Designed for adolescents and young adults, it implements established neuropsychological paradigms -- Go/No-Go, N-Back, Flanker, and Visual Search -- in a gamified, mobile-first interface with adaptive difficulty and clinically relevant performance metrics.
+A brain training app for teens. Four cognitive exercises based on real neuropsychology, wrapped in a gamified PWA that works offline.
 
-## Features
+Built with zero frameworks — just TypeScript, CSS, and the Web Audio API.
 
-### Cognitive Exercises
+## What it does
 
-- **Go/No-Go** -- Inhibitory control training. Respond to "go" stimuli, withhold response on "no-go" stimuli. Tracks commission/omission errors and reaction time variability (IIV).
-- **N-Back** -- Working memory training. Identify stimuli matching those presented N steps earlier. Includes lure trials for clinical depth. Reports d-prime, hits, misses, and false alarms.
-- **Flanker** -- Attentional conflict resolution. Identify the direction of a central arrow while ignoring flanking distractors. Includes neutral trials. Measures congruent/incongruent RT and interference scores.
-- **Visual Search** -- Visual attention and scanning efficiency. Locate a target among distractors on a grid. Tracks search time, items per second, and search slope.
+**Four cognitive exercises**, each targeting a specific executive function:
 
-### Wellness and Productivity
+| Exercise | What it trains | Key metric |
+|---|---|---|
+| **Go/No-Go** | Impulse control | Commission errors, RT variability |
+| **N-Back** | Working memory | d-prime (signal detection) |
+| **Flanker** | Selective attention | Interference score |
+| **Visual Search** | Visual scanning | Search slope (ms/item) |
 
-- **Breathing** -- Guided breathing exercises (box breathing 4-4-4, relaxation breathing 4-7-8) for pre-session calming and focus preparation.
-- **Pomodoro** -- Configurable focus timer (15/20/25 minutes) with motivational quotes.
+Plus **breathing exercises** (box 4-4-4, relaxation 4-7-8) and a **Pomodoro timer**.
 
-### Adaptive Difficulty
+Each exercise adapts across 10 difficulty levels based on your recent scores. The difficulty engine uses tighter thresholds than typical apps (75/65 instead of 80/60) to keep you in the optimal learning zone.
 
-Each cognitive exercise supports 10 difficulty levels. The adaptive engine adjusts parameters (stimulus duration, inter-stimulus interval, no-go ratio, N-level, congruent ratio, grid size) based on recent performance, with micro-adjustments to keep users in their zone of proximal development.
+## What makes it clinical
 
-### Clinical Metrics
+This isn't a casual brain game. The metrics come from actual neuropsychological assessment:
 
-The app captures metrics drawn from clinical neuropsychology:
+- **IIV** (intra-individual variability) — RT consistency is the strongest marker of attention problems in teens
+- **Lapse detection** — flags responses >3 SD above your mean RT (momentary attention lapses)
+- **Lure trials** in N-Back — items that match at N+1 or N-1, not N. Catches familiarity-based false alarms
+- **Neutral trials** in Flanker — separates facilitation (congruent faster than neutral) from inhibition cost (incongruent slower than neutral)
+- **Search slope** — linear regression of RT vs set size. Steeper = less efficient visual processing
+- **Baseline assessment** — fixed Level 1 test every 20 sessions to measure real improvement vs practice effects
 
-- **Reaction time variability (IIV)** -- coefficient of variation in response times, a marker of attentional lapses
-- **d-prime** -- signal detection sensitivity in N-Back, separating true memory from guessing
-- **Commission and omission errors** -- false responses and missed targets in Go/No-Go
-- **Interference score** -- RT cost of incongruent vs. congruent trials in Flanker
-- **Lapse detection** -- identification of abnormally slow responses
-- **Search slope** -- relationship between set size and search time in Visual Search
+All scored per-exercise, not averaged into a meaningless composite number.
 
-A baseline assessment mode allows tracking cognitive improvement over time.
+## What keeps teens coming back
 
-### Gamification
+The engagement system is designed around ADHD-specific reward sensitivity:
 
-- XP system with 30 levels and named titles
-- 7 badge types (bronze, silver, gold tiers)
-- Daily streaks and longest streak tracking
-- Weekly challenges (perfect exercises, total sessions, focus time, zero-error runs)
-- Personal records per exercise
-- Random bonus events
+- **Streak system** with freeze protection — earn 1 freeze per 7-day streak (max 3). Miss a day, freeze auto-activates. Soft "keep your streak" messaging instead of punishing "streak lost" anxiety
+- **Daily challenges** — 12 types, deterministic per day (same for all users), with difficulty guards so new users don't get impossible challenges
+- **Quick / Standard / Deep sessions** — 1-minute quick session goes straight to your weakest exercise, no mood modal, no plan screen. Removes the activation barrier
+- **Level-up celebrations** with sound, haptics, confetti, and unlock announcements
+- **Badge ceremonies** — 7 badges x 3 tiers, shown as full-screen overlays with share button
+- **Daily login bonus** — 10 XP just for opening the app
+- **30 levels** with named titles (Newcomer through Absolute), theme unlocks at 5/10/15/20
 
-### Personalization
+The feedback language is ADHD-friendly throughout: "Hold steady!" instead of "Don't press!", tiered encouragement at every score level, and the app tells you when difficulty adjusts ("We matched the difficulty to your pace").
 
-- **Themes**: Dark, Light, Ocean, Sunset, Forest, AMOLED -- unlocked progressively as the user levels up
-- **Languages**: English, Russian, German, French, Spanish (with automatic browser locale detection)
-- **Mood tracking**: Pre- and post-session mood check-in (energized, calm, tired, stressed)
-- Customizable daily goals (5, 10, or 15 minutes)
-- Avatar system with level-gated unlocks
+## Languages
 
-### PWA Support
+English, Russian, German, French, Spanish. Auto-detects browser language. Switch anytime (reloads the app). All 390+ translation keys verified for parity across all 5 languages.
 
-- Service worker for offline access
-- Installable on mobile home screens
-- Web App Manifest with theme color and icons
+## Tech
 
-## Getting Started
+| | |
+|---|---|
+| Language | TypeScript (strict) |
+| Bundler | esbuild |
+| Tests | Vitest — 270 tests across 13 files |
+| Audio | Web Audio API (procedural, no files) |
+| Fonts | Self-hosted Inter + Space Grotesk (no Google Fonts CDN) |
+| State | Custom reactive store with localStorage persistence and cross-tab sync |
+| Router | Hash-based SPA router with param extraction |
+| PWA | Service worker, manifest, offline-first, installable |
+| Frameworks | None |
 
-### Prerequisites
+Bundle: ~380kb JS, ~70kb CSS. Zero external requests.
 
-- Node.js (18+)
-
-### Installation
+## Run it
 
 ```sh
 npm install
+npm run dev        # dev server with live rebuild
+npm test           # 270 tests
+npm run build      # production build to dist/
 ```
 
-### Development
+Requires Node 18+.
 
-```sh
-npm run dev
-```
-
-Starts the development server with live rebuild via esbuild.
-
-### Production Build
-
-```sh
-npm run build:prod
-```
-
-Outputs optimized, minified bundles to `public/js/bundle.js`.
-
-### Tests
-
-```sh
-npm test
-```
-
-Runs the test suite with Vitest.
-
-## Project Structure
+## Project layout
 
 ```
 public/
-  index.html              -- App entry point
-  manifest.json           -- PWA manifest
-  sw.js                   -- Service worker
-  css/                    -- Stylesheets (variables, base, components, layout, exercises, animations)
   js/
-    main.ts               -- App initialization, routing, audio context
-    router.ts             -- Hash-based SPA router
-    types.ts              -- TypeScript type definitions
-    constants.ts          -- Exercise configs, difficulty tables, badge definitions, XP tables
-    core/
-      state.ts            -- Centralized app state management
-      storage.ts          -- LocalStorage persistence
-      adaptive.ts         -- Adaptive difficulty engine
-      progression.ts      -- XP, levels, badges, streaks, weekly challenges
-      session.ts          -- Session orchestration
-      sound.ts            -- Procedural audio feedback (Web Audio API)
-      i18n.ts             -- Internationalization runtime
-      disposables.ts      -- Resource cleanup (timeouts, intervals, listeners)
-    exercises/
-      go-no-go.ts         -- Go/No-Go exercise implementation
-      n-back.ts           -- N-Back exercise implementation
-      flanker.ts          -- Flanker exercise implementation
-      visual-search.ts    -- Visual Search exercise implementation
-      breathing.ts        -- Breathing exercise implementation
-      pomodoro.ts         -- Pomodoro timer implementation
-      helpers.ts          -- Shared exercise utilities
-    i18n/
-      en.ts, ru.ts,       -- Translation files
-      de.ts, fr.ts, es.ts
-      keys.ts             -- Translation key definitions
-    ui/
-      renderer.ts         -- DOM rendering utilities
-      screens/            -- Screen components (dashboard, exercise-select, exercise-play, results, stats, settings, onboarding)
-      components/         -- Reusable UI components (nav, avatar, badge-card, chart, progress-bar, streak-display, timer, weekly-recap)
+    core/           # state, storage, adaptive difficulty, progression, streaks, i18n
+    exercises/      # go-no-go, n-back, flanker, visual-search, breathing, pomodoro
+    ui/screens/     # dashboard, exercise-play, results, stats, settings, onboarding
+    ui/components/  # nav, avatar, charts, streak-display, celebrations, confetti
+    i18n/           # en, ru, de, fr, es translation files
+  css/              # design tokens, components, layout, exercises, animations, fonts
+tests/              # 13 test files covering all core logic
+plans/              # feature plans and domain expert reviews
 ```
 
-## Clinical Background
+## Clinical disclaimer
 
-The exercises in Focus are based on well-established neuropsychological paradigms commonly used in ADHD and executive function research:
-
-- **Go/No-Go paradigm** -- Measures response inhibition, a core deficit in ADHD. Commission errors (false alarms to no-go stimuli) reflect inhibitory control failures, while omission errors and RT variability reflect sustained attention deficits.
-- **N-Back task** -- Assesses working memory updating, one of the three core executive functions (Miyake et al., 2000). The inclusion of lure trials (stimuli matching at N+1 or N-1 positions) increases sensitivity to proactive interference.
-- **Eriksen Flanker task** -- Measures attentional conflict monitoring and resolution. The interference effect (RT cost of incongruent flankers) reflects the efficiency of the anterior cingulate cortex in conflict detection.
-- **Visual Search** -- Evaluates the efficiency of visual attention deployment. Search slope (the increase in RT per additional distractor) distinguishes between parallel (feature) and serial (conjunction) search strategies.
-
-These paradigms are not diagnostic tools. Focus is a training application intended for cognitive exercise and self-improvement, not clinical assessment.
-
-## Tech Stack
-
-- **TypeScript** -- Strict typing throughout the codebase
-- **esbuild** -- Fast bundling and minification
-- **Vitest** -- Unit testing framework
-- **Web Audio API** -- Procedural sound generation (no audio files)
-- **PWA** -- Service worker, manifest, offline-first architecture
-- **No frameworks** -- Vanilla TypeScript with a custom router, state manager, and component system
+The exercises are based on validated paradigms (Go/No-Go, N-Back, Eriksen Flanker, Visual Search) from the ADHD and executive function literature. This app is for cognitive training and self-improvement — not clinical diagnosis. It does not replace professional assessment.
 
 ## License
 
