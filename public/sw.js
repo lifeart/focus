@@ -20,7 +20,7 @@ const ASSETS = [
   './manifest.json'
 ];
 
-// Install - cache all assets
+// Install - cache all assets, activate immediately
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
@@ -28,39 +28,47 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate - clean old caches
+// Activate - clean old caches, take control immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Fetch - cache-first for assets, network-first for navigation
+// Fetch strategy
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
+  // Navigation: network-first (SPA routing)
   if (request.mode === 'navigate') {
-    // Network-first for navigation (SPA)
     event.respondWith(
       fetch(request).catch(() => caches.match('./index.html'))
     );
     return;
   }
 
-  // Cache-first for assets
+  // Assets: stale-while-revalidate
+  // Serve from cache immediately, then update cache in background
   event.respondWith(
     caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request).then((response) => {
+      const fetchPromise = fetch(request).then((response) => {
         if (response.ok) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         }
         return response;
-      });
+      }).catch(() => cached);
+
+      return cached || fetchPromise;
     })
   );
+});
+
+// Listen for skip-waiting message from the app
+self.addEventListener('message', (event) => {
+  if (event.data === 'skipWaiting') {
+    self.skipWaiting();
+  }
 });
