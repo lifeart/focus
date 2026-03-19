@@ -85,28 +85,14 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
   }
 
   function createShapeElement(shape: ShapeType): HTMLElement {
-    const div = el('div');
+    const classMap: Record<ShapeType, string> = {
+      'red-circle': 'vs-item vs-item--red-circle',
+      'blue-circle': 'vs-item vs-item--blue-circle',
+      'red-square': 'vs-item vs-item--red-square',
+    };
+    const div = el('div', { className: classMap[shape] });
     const size = Math.max(44, Math.floor(200 / currentGridSize));
-    div.style.width = `${size}px`;
-    div.style.height = `${size}px`;
-    div.style.cursor = 'pointer';
-    div.style.touchAction = 'manipulation';
-    div.style.userSelect = 'none';
-    div.style.webkitUserSelect = 'none';
-    div.style.transition = 'transform 0.1s';
-
-    if (shape === 'red-circle') {
-      div.style.background = '#ff6b6b';
-      div.style.borderRadius = '50%';
-    } else if (shape === 'blue-circle') {
-      div.style.background = '#45b7d1';
-      div.style.borderRadius = '50%';
-    } else {
-      // red-square
-      div.style.background = '#ff6b6b';
-      div.style.borderRadius = '0';
-    }
-
+    div.style.setProperty('--vs-item-size', `${size}px`);
     div.setAttribute('data-shape', shape);
     return div;
   }
@@ -319,29 +305,11 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
       const header = el('div', { className: 'exercise-header' }, [timerDisplay, trialCounter]);
 
       gridContainer = el('div', { className: 'visual-search-grid' });
-      gridContainer.style.display = 'grid';
       gridContainer.style.gridTemplateColumns = `repeat(${baseGridSize}, 1fr)`;
-      gridContainer.style.gap = '8px';
-      gridContainer.style.justifyItems = 'center';
-      gridContainer.style.alignItems = 'center';
       gridContainer.style.maxWidth = `${baseGridSize * (Math.max(44, Math.floor(200 / baseGridSize)) + 8)}px`;
-      gridContainer.style.margin = '1.5rem auto';
-      gridContainer.style.padding = '1rem';
 
       noTargetBtn = el('button', { className: 'visual-search-no-target-btn' });
       noTargetBtn.textContent = t('visualSearch.noTarget');
-      noTargetBtn.style.display = 'block';
-      noTargetBtn.style.margin = '1rem auto';
-      noTargetBtn.style.padding = '0.75rem 2rem';
-      noTargetBtn.style.fontSize = '1.1rem';
-      noTargetBtn.style.border = '2px solid #555';
-      noTargetBtn.style.borderRadius = '12px';
-      noTargetBtn.style.background = 'rgba(255,255,255,0.08)';
-      noTargetBtn.style.color = '#e0e0e0';
-      noTargetBtn.style.cursor = 'pointer';
-      noTargetBtn.style.touchAction = 'manipulation';
-      noTargetBtn.style.userSelect = 'none';
-      noTargetBtn.style.webkitUserSelect = 'none';
       noTargetBtn.setAttribute('disabled', '');
 
       container.appendChild(header);

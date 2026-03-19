@@ -54,21 +54,12 @@ export function createGoNoGo(level: number, params: DifficultyParams, sound: Sou
   }
 
   function createShape(go: boolean): HTMLElement {
-    const size = 100;
-    const shape = el('div');
-    shape.style.width = `${size}px`;
-    shape.style.height = `${size}px`;
-    shape.style.margin = '0 auto';
-    shape.style.transition = 'transform 0.1s ease';
-
+    const shape = el('div', {
+      className: go ? 'gng-stimulus gng-stimulus--go' : 'gng-stimulus gng-stimulus--nogo',
+    });
     if (go) {
-      shape.style.borderRadius = '50%';
-      shape.style.backgroundColor = randomGoColor();
-    } else {
-      shape.style.borderRadius = '0';
-      shape.style.backgroundColor = NOGO_COLOR;
+      shape.style.setProperty('--gng-go-color', randomGoColor());
     }
-
     return shape;
   }
 
@@ -263,13 +254,7 @@ export function createGoNoGo(level: number, params: DifficultyParams, sound: Sou
 
       const header = el('div', { className: 'exercise-header' }, [timerDisplay, trialCounter]);
 
-      stimulusArea = el('div', { className: 'exercise-stimulus-area' });
-      stimulusArea.style.display = 'flex';
-      stimulusArea.style.alignItems = 'center';
-      stimulusArea.style.justifyContent = 'center';
-      stimulusArea.style.minHeight = '200px';
-      stimulusArea.style.cursor = 'pointer';
-      stimulusArea.style.userSelect = 'none';
+      stimulusArea = el('div', { className: 'exercise-stimulus-area gng-stimulus-area' });
 
       container.appendChild(header);
       container.appendChild(stimulusArea);

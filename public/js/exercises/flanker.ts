@@ -64,32 +64,16 @@ export function createFlanker(level: number, params: DifficultyParams, sound: So
   }
 
   function createArrowSpan(direction: Direction, isCenter: boolean): HTMLElement {
-    const span = el('span');
+    const span = el('span', {
+      className: isCenter ? 'flanker-arrow flanker-arrow--target' : 'flanker-arrow',
+    });
     span.textContent = direction === 'left' ? '\u25C0' : '\u25B6';
-    span.style.fontSize = '3rem';
-    span.style.margin = '0 0.25rem';
-    span.style.display = 'inline-block';
-    span.style.userSelect = 'none';
-    span.style.lineHeight = '1';
-    if (isCenter) {
-      span.style.color = '#ffd93d';
-      span.style.transform = 'scale(1.3)';
-      span.style.textShadow = '0 0 12px rgba(255,217,61,0.6)';
-    } else {
-      span.style.color = '#e0e0e0';
-    }
     return span;
   }
 
   function createNeutralSpan(): HTMLElement {
-    const span = el('span');
+    const span = el('span', { className: 'flanker-arrow flanker-arrow--neutral' });
     span.textContent = '\u2014'; // em dash
-    span.style.fontSize = '3rem';
-    span.style.margin = '0 0.25rem';
-    span.style.display = 'inline-block';
-    span.style.userSelect = 'none';
-    span.style.lineHeight = '1';
-    span.style.color = '#e0e0e0';
     return span;
   }
 
@@ -115,11 +99,7 @@ export function createFlanker(level: number, params: DifficultyParams, sound: So
     stimulusArea.innerHTML = '';
 
     // Build row of 5 items: flanker flanker CENTER flanker flanker
-    const row = el('div');
-    row.style.display = 'flex';
-    row.style.alignItems = 'center';
-    row.style.justifyContent = 'center';
-    row.style.gap = '0.3rem';
+    const row = el('div', { className: 'flanker-row' });
 
     if (trialType === 'neutral') {
       // Neutral: flankers are dashes, center is still an arrow
@@ -339,44 +319,15 @@ export function createFlanker(level: number, params: DifficultyParams, sound: So
       const header = el('div', { className: 'exercise-header' }, [timerDisplay, trialCounter]);
 
       stimulusArea = el('div', { className: 'exercise-stimulus-area' });
-      stimulusArea.style.display = 'flex';
-      stimulusArea.style.alignItems = 'center';
-      stimulusArea.style.justifyContent = 'center';
-      stimulusArea.style.minHeight = '200px';
-      stimulusArea.style.userSelect = 'none';
 
       // On-screen response buttons for mobile
       const btnLeft = el('button', { className: 'flanker-btn flanker-btn--left' });
       btnLeft.textContent = '\u25C0';
-      btnLeft.style.fontSize = '2.5rem';
-      btnLeft.style.padding = '0.75rem 2rem';
-      btnLeft.style.border = '2px solid #555';
-      btnLeft.style.borderRadius = '12px';
-      btnLeft.style.background = 'rgba(255,255,255,0.08)';
-      btnLeft.style.color = '#e0e0e0';
-      btnLeft.style.cursor = 'pointer';
-      btnLeft.style.touchAction = 'manipulation';
-      btnLeft.style.userSelect = 'none';
-      btnLeft.style.webkitUserSelect = 'none';
 
       const btnRight = el('button', { className: 'flanker-btn flanker-btn--right' });
       btnRight.textContent = '\u25B6';
-      btnRight.style.fontSize = '2.5rem';
-      btnRight.style.padding = '0.75rem 2rem';
-      btnRight.style.border = '2px solid #555';
-      btnRight.style.borderRadius = '12px';
-      btnRight.style.background = 'rgba(255,255,255,0.08)';
-      btnRight.style.color = '#e0e0e0';
-      btnRight.style.cursor = 'pointer';
-      btnRight.style.touchAction = 'manipulation';
-      btnRight.style.userSelect = 'none';
-      btnRight.style.webkitUserSelect = 'none';
 
       const buttonRow = el('div', { className: 'flanker-buttons' }, [btnLeft, btnRight]);
-      buttonRow.style.display = 'flex';
-      buttonRow.style.justifyContent = 'center';
-      buttonRow.style.gap = '2rem';
-      buttonRow.style.marginTop = '2rem';
 
       container.appendChild(header);
       container.appendChild(stimulusArea);
