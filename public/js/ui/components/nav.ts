@@ -35,7 +35,8 @@ function isActive(itemPath: string, currentPath: string): boolean {
   if (itemPath === '/dashboard') {
     return currentPath === '/' || currentPath === '/dashboard';
   }
-  return currentPath.startsWith(itemPath);
+  // Exact match only — prevents /exercises matching /exercises-foo
+  return currentPath === itemPath;
 }
 
 export function renderNav(
@@ -45,14 +46,13 @@ export function renderNav(
 ): () => void {
   const nav = el('nav', { className: 'nav' });
 
-  const buttons: HTMLButtonElement[] = [];
-
   for (const item of NAV_ITEMS) {
     const label = t(item.labelKey);
     const btn = el('button', {
       className: 'nav__item' + (isActive(item.path, currentPath) ? ' nav__item--active' : ''),
       'aria-label': label,
     });
+    btn.setAttribute('data-nav-path', item.path);
 
     const iconSpan = el('span', { className: 'nav__icon' });
     iconSpan.innerHTML = item.icon;
@@ -66,26 +66,24 @@ export function renderNav(
       onNavigate(item.path);
     });
 
-    buttons.push(btn);
     nav.appendChild(btn);
   }
 
   container.appendChild(nav);
 
-  // Return cleanup
   return () => {
     nav.remove();
   };
 }
 
 export function updateNavActive(container: HTMLElement, currentPath: string): void {
-  const items = container.querySelectorAll('.nav__item');
-  items.forEach((item, index) => {
-    const navItem = NAV_ITEMS[index];
-    if (navItem && isActive(navItem.path, currentPath)) {
-      addClass(item as HTMLElement, 'nav__item--active');
+  const items = container.querySelectorAll<HTMLElement>('.nav__item[data-nav-path]');
+  items.forEach((item) => {
+    const path = item.getAttribute('data-nav-path') || '';
+    if (isActive(path, currentPath)) {
+      addClass(item, 'nav__item--active');
     } else {
-      removeClass(item as HTMLElement, 'nav__item--active');
+      removeClass(item, 'nav__item--active');
     }
   });
 }

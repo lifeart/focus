@@ -97,12 +97,20 @@ function init(): void {
   function updateNavVisibility(): void {
     const path = router.getCurrentPath();
     const hideNav = path.startsWith('/play') || path.startsWith('/onboarding') || path.startsWith('/session');
+    const wasHidden = navContainer.style.display === 'none';
     navContainer.style.display = hideNav ? 'none' : '';
+    // When nav becomes visible again, update active state
+    if (wasHidden && !hideNav) {
+      updateNavActive(navContainer, path);
+    }
   }
 
   window.addEventListener('hashchange', () => {
-    updateNavActive(navContainer, router.getCurrentPath());
     updateNavVisibility();
+    // Only update nav active state when nav is visible
+    if (navContainer.style.display !== 'none') {
+      updateNavActive(navContainer, router.getCurrentPath());
+    }
   });
 
   // Lazy-init AudioContext on first user interaction
