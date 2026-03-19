@@ -216,9 +216,35 @@
   --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
 }
 
-/* Dark theme (explicit, resets to default) */
+/* Dark theme (explicit override when OS prefers light) */
 [data-theme="dark"] {
-  /* Uses :root defaults, no overrides needed */
+  --bg:             #0f0f1a;
+  --surface:        #1a1a2e;
+  --surface-2:      #252540;
+  --surface-3:      #30304d;
+  --text:           #e8e8f0;
+  --text-secondary: #9898b0;
+  --text-muted:     #6a6a82;
+
+  --primary:        #7c5cfc;
+  --primary-hover:  #9279ff;
+  --primary-active: #6a4ae0;
+  --primary-subtle: rgba(124, 92, 252, 0.12);
+  --primary-glow:   rgba(124, 92, 252, 0.25);
+
+  --secondary:        #ff6b9d;
+  --secondary-hover:  #ff85b1;
+  --secondary-active: #e55a89;
+  --secondary-subtle: rgba(255, 107, 157, 0.12);
+
+  --success-subtle: rgba(78, 205, 196, 0.12);
+  --warning-subtle: rgba(255, 230, 109, 0.12);
+  --error-subtle:   rgba(255, 107, 107, 0.12);
+
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md:  0 4px 6px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-lg:  0 10px 25px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 20px var(--primary-glow);
 }
 
 /* ============================================

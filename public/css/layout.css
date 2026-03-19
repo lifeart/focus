@@ -501,6 +501,9 @@
 }
 
 .results-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   background: var(--surface);
   border-radius: var(--radius-xl);
   padding: var(--space-md);
@@ -509,6 +512,7 @@
 }
 
 .results-metric__value {
+  display: block;
   font-family: var(--font-heading);
   font-size: var(--text-lg);
   font-weight: var(--weight-bold);
@@ -516,6 +520,7 @@
 }
 
 .results-metric__label {
+  display: block;
   font-size: var(--text-xs);
   color: var(--text-secondary);
   margin-top: var(--space-xs);

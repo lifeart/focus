@@ -93,9 +93,16 @@ function init(): void {
     });
   }
 
-  // Update nav on hash change
+  // Update nav on hash change, hide on exercise/onboarding screens
+  function updateNavVisibility(): void {
+    const path = router.getCurrentPath();
+    const hideNav = path.startsWith('/play') || path.startsWith('/onboarding') || path.startsWith('/session');
+    navContainer.style.display = hideNav ? 'none' : '';
+  }
+
   window.addEventListener('hashchange', () => {
     updateNavActive(navContainer, router.getCurrentPath());
+    updateNavVisibility();
   });
 
   // Lazy-init AudioContext on first user interaction
@@ -129,6 +136,7 @@ function init(): void {
 
   // Initial nav render
   refreshNav();
+  updateNavVisibility();
 }
 
 // Boot

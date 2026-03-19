@@ -208,6 +208,15 @@ export const renderResults: ScreenRender = (container, _params) => {
   }
 
   const config = EXERCISE_CONFIGS[result.exerciseId];
+  if (!config) {
+    container.appendChild(
+      el('div', { className: 'empty-state' }, [
+        el('p', { className: 'empty-state__text' }, [t('results.parseError')]),
+        el('a', { href: '#/exercises', className: 'btn btn--primary' }, [t('results.toExercises')]),
+      ]),
+    );
+    return () => disposables.dispose();
+  }
   const tier = getScoreTier(result.score);
   const data = appState.getData();
   const currentLevel = getLevel(data.progression.totalXP);
