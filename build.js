@@ -55,6 +55,19 @@ function copyHTML() {
     console.log("Copied sw.js to dist/ (with cache-busting)");
   }
 
+  // Copy fonts
+  const fontsSrc = path.resolve(__dirname, "public", "fonts");
+  const fontsDest = path.resolve(distDir, "fonts");
+  if (fs.existsSync(fontsSrc)) {
+    if (!fs.existsSync(fontsDest)) {
+      fs.mkdirSync(fontsDest, { recursive: true });
+    }
+    for (const file of fs.readdirSync(fontsSrc)) {
+      fs.copyFileSync(path.join(fontsSrc, file), path.join(fontsDest, file));
+    }
+    console.log("Copied fonts to dist/fonts/");
+  }
+
   // Generate PWA icons
   const generateIconsPath = path.resolve(__dirname, "scripts", "generate-icons.js");
   if (fs.existsSync(generateIconsPath)) {
@@ -89,6 +102,8 @@ async function build() {
         minify: isProd,
         sourcemap: isDev || !isProd,
         logLevel: "info",
+        loader: { '.woff2': 'file' },
+        assetNames: 'fonts/[name]',
       });
     }
   }

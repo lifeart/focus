@@ -4,6 +4,7 @@ import { appState } from '../../main.js';
 import { createDisposables } from '../../core/disposables.js';
 import { calculateXP } from '../../core/progression.js';
 import { t } from '../../core/i18n.js';
+import type { Locale } from '../../types.js';
 
 // ─── Constants ───────────────────────────────────────────────────────
 
@@ -57,6 +58,126 @@ function injectStyles(): HTMLStyleElement {
       font-size: var(--text-base);
       color: var(--text-secondary);
       margin: 0 0 var(--space-md);
+      text-align: center;
+      line-height: var(--line-normal);
+    }
+    .onboarding__detail {
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 320px;
+      line-height: var(--line-normal);
+      margin: 0;
+    }
+
+    /* Progress dots */
+    .onboarding__progress {
+      display: flex;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-lg);
+    }
+    .onboarding__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: var(--radius-full);
+      background: var(--surface-3);
+      transition: background-color var(--transition-normal), transform var(--transition-fast);
+    }
+    .onboarding__dot--active {
+      background: var(--primary);
+      transform: scale(1.25);
+    }
+    .onboarding__dot--done {
+      background: var(--success);
+    }
+
+    /* Feature list */
+    .onboarding__features {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      margin: var(--space-md) 0;
+      width: 100%;
+      max-width: 300px;
+    }
+    .onboarding__feature {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+    .onboarding__feature-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-full);
+      background: var(--primary-subtle);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xs);
+      flex-shrink: 0;
+    }
+
+    /* Visual legend */
+    .onboarding__legend {
+      display: flex;
+      gap: var(--space-xl);
+      margin: var(--space-md) 0;
+      justify-content: center;
+    }
+    .onboarding__legend-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    .onboarding__legend-shape {
+      width: 48px;
+      height: 48px;
+    }
+    .onboarding__legend-shape--go {
+      border-radius: var(--radius-full);
+      background: var(--success);
+      box-shadow: 0 0 16px rgba(78, 205, 196, 0.3);
+    }
+    .onboarding__legend-shape--nogo {
+      border-radius: var(--radius-lg);
+      background: var(--error);
+      box-shadow: 0 0 16px rgba(255, 107, 107, 0.3);
+    }
+    .onboarding__legend-label {
+      font-size: var(--text-xs);
+      font-weight: var(--weight-semibold);
+      color: var(--text-secondary);
+    }
+
+    /* Language selector */
+    .onboarding__lang-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      justify-content: center;
+      margin-bottom: var(--space-md);
+    }
+    .onboarding__lang-btn {
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--radius-full);
+      border: 1.5px solid var(--surface-3);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: var(--text-xs);
+      cursor: pointer;
+      transition: border-color var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
+    }
+    .onboarding__lang-btn:hover {
+      border-color: var(--text-muted);
+    }
+    .onboarding__lang-btn--active {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-subtle);
     }
 
     /* Mini exercise */
@@ -258,6 +379,8 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
   const wrapper = el('div', { className: 'flex flex--col flex--center onboarding__wrapper' });
   container.appendChild(wrapper);
 
+  const TOTAL_STEPS = 6;
+
   // Wizard state
   let userName = '';
   let avatarColor = AVATAR_COLORS[0];
@@ -268,12 +391,70 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
   let exerciseStartTime = 0;
   let exerciseEndTime = 0;
 
+  function buildProgressDots(currentStep: number): HTMLElement {
+    const dotsContainer = el('div', { className: 'onboarding__progress' });
+    for (let i = 1; i <= TOTAL_STEPS; i++) {
+      const dot = el('div', { className: 'onboarding__dot' });
+      if (i < currentStep) addClass(dot, 'onboarding__dot--done');
+      else if (i === currentStep) addClass(dot, 'onboarding__dot--active');
+      dotsContainer.appendChild(dot);
+    }
+    return dotsContainer;
+  }
+
   // ─── Step 1: Welcome ────────────────────────────────────────────
+
+  function buildLangSelector(): HTMLElement {
+    const locales: { code: Locale; label: string }[] = [
+      { code: 'en', label: 'English' },
+      { code: 'ru', label: 'Русский' },
+      { code: 'de', label: 'Deutsch' },
+      { code: 'fr', label: 'Français' },
+      { code: 'es', label: 'Español' },
+    ];
+    const currentLocale = appState.getData().settings.locale || 'en';
+    const row = el('div', { className: 'onboarding__lang-row' });
+
+    for (const loc of locales) {
+      const btn = el('button', {
+        className: `onboarding__lang-btn${loc.code === currentLocale ? ' onboarding__lang-btn--active' : ''}`,
+      }, [loc.label]);
+      btn.addEventListener('click', () => {
+        if (loc.code !== currentLocale) {
+          appState.updateData((d) => {
+            d.settings.locale = loc.code;
+          });
+          appState.flush();
+          window.location.reload();
+        }
+      });
+      row.appendChild(btn);
+    }
+
+    return row;
+  }
 
   function buildWelcome(): HTMLElement {
     const step = el('div', { className: 'onboarding__step' }, [
+      buildLangSelector(),
+      buildProgressDots(1),
       el('h1', { className: 'onboarding__title onboarding__title--large' }, ['Focus']),
-      el('p', { className: 'onboarding__subtitle' }, [t('onboarding.subtitle')]),
+      el('p', { className: 'onboarding__instruction' }, [t('onboarding.subtitle')]),
+      el('p', { className: 'onboarding__detail' }, [t('onboarding.welcomeDetail')]),
+      el('div', { className: 'onboarding__features' }, [
+        el('div', { className: 'onboarding__feature' }, [
+          el('div', { className: 'onboarding__feature-icon' }, ['\u2713']),
+          el('span', null, [t('onboarding.welcomeFeature1')]),
+        ]),
+        el('div', { className: 'onboarding__feature' }, [
+          el('div', { className: 'onboarding__feature-icon' }, ['\u2713']),
+          el('span', null, [t('onboarding.welcomeFeature2')]),
+        ]),
+        el('div', { className: 'onboarding__feature' }, [
+          el('div', { className: 'onboarding__feature-icon' }, ['\u2713']),
+          el('span', null, [t('onboarding.welcomeFeature3')]),
+        ]),
+      ]),
       el('button', {
         className: 'btn btn--primary btn--lg',
         onClick: () => transitionStep(wrapper, buildExerciseIntro, disposables),
@@ -286,13 +467,20 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
 
   function buildExerciseIntro(): HTMLElement {
     const step = el('div', { className: 'onboarding__step' }, [
+      buildProgressDots(2),
       el('h2', { className: 'onboarding__title' }, [t('onboarding.miniTest')]),
-      el('p', { className: 'onboarding__instruction' }, [
-        t('onboarding.tapCircles'),
+      el('p', { className: 'onboarding__instruction' }, [t('onboarding.miniTestWhy')]),
+      el('div', { className: 'onboarding__legend' }, [
+        el('div', { className: 'onboarding__legend-item' }, [
+          el('div', { className: 'onboarding__legend-shape onboarding__legend-shape--go' }),
+          el('div', { className: 'onboarding__legend-label' }, [t('onboarding.legendGo')]),
+        ]),
+        el('div', { className: 'onboarding__legend-item' }, [
+          el('div', { className: 'onboarding__legend-shape onboarding__legend-shape--nogo' }),
+          el('div', { className: 'onboarding__legend-label' }, [t('onboarding.legendNoGo')]),
+        ]),
       ]),
-      el('p', { className: 'onboarding__instruction' }, [
-        t('onboarding.pressSpace'),
-      ]),
+      el('p', { className: 'onboarding__detail' }, [t('onboarding.pressSpace')]),
       el('button', {
         className: 'btn btn--primary btn--lg',
         onClick: () => transitionStep(wrapper, buildExercise, disposables),
@@ -314,15 +502,25 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
     const counterEl = el('div', { className: 'onboarding__trial-counter' });
     const stimArea = el('div', { className: 'onboarding__stimulus-area' });
 
+    // Progress bar for exercise
+    const progressBar = el('div');
+    progressBar.style.cssText = 'width:100%;max-width:300px;height:4px;background:var(--surface-3);border-radius:4px;overflow:hidden;';
+    const progressFill = el('div');
+    progressFill.style.cssText = 'height:100%;background:var(--primary);border-radius:4px;transition:width 0.3s ease;width:0%;';
+    progressBar.appendChild(progressFill);
+
     const step = el('div', { className: 'onboarding__step' }, [
+      buildProgressDots(3),
       el('h2', { className: 'onboarding__title' }, [t('onboarding.miniTest')]),
       counterEl,
+      progressBar,
       stimArea,
       feedbackEl,
     ]);
 
     function updateCounter(): void {
       counterEl.textContent = `${trialIndex + 1} / ${TOTAL_TRIALS}`;
+      progressFill.style.width = `${((trialIndex + 1) / TOTAL_TRIALS) * 100}%`;
     }
 
     function handleResponse(): void {
@@ -421,12 +619,14 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
         : t('onboarding.encourage.low');
 
     const step = el('div', { className: 'onboarding__step' }, [
+      buildProgressDots(4),
       el('h2', { className: 'onboarding__title' }, [t('onboarding.result')]),
       el('div', { className: 'onboarding__score' }, [`${miniExerciseScore}%`]),
       el('p', { className: 'onboarding__subtitle' }, [
         t('onboarding.correctCount', { correct: miniExerciseCorrect, total: miniExerciseTotal }),
       ]),
       el('p', { className: 'onboarding__subtitle' }, [encouragement]),
+      el('p', { className: 'onboarding__detail' }, [t('onboarding.resultContext')]),
       el('button', {
         className: 'btn btn--primary btn--lg',
         onClick: () => transitionStep(wrapper, buildProfileName, disposables),
@@ -445,7 +645,9 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
     }) as HTMLInputElement;
 
     const step = el('div', { className: 'onboarding__step' }, [
+      buildProgressDots(5),
       el('h2', { className: 'onboarding__title' }, [t('onboarding.whatsYourName')]),
+      el('p', { className: 'onboarding__detail' }, [t('onboarding.nameExplain')]),
       input,
       el('button', {
         className: 'btn btn--primary btn--lg',
@@ -501,7 +703,9 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
     });
 
     const step = el('div', { className: 'onboarding__step' }, [
+      buildProgressDots(5),
       el('h2', { className: 'onboarding__title' }, [t('onboarding.chooseColor')]),
+      el('p', { className: 'onboarding__detail' }, [t('onboarding.colorExplain')]),
       preview,
       colorsContainer,
       el('button', {
@@ -550,7 +754,9 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
     });
 
     const step = el('div', { className: 'onboarding__step' }, [
+      buildProgressDots(6),
       el('h2', { className: 'onboarding__title' }, [t('onboarding.howManyMinutes')]),
+      el('p', { className: 'onboarding__detail' }, [t('onboarding.goalExplain')]),
       goalsContainer,
       el('button', {
         className: 'btn btn--primary btn--lg',

@@ -67,9 +67,10 @@ function init(): void {
     appState.updateData((d) => {
       d.settings.locale = detectedLocale;
     });
+    appState.flush();
     initI18n(detectedLocale);
   } else {
-    initI18n(data.settings.locale || 'ru');
+    initI18n(data.settings.locale || 'en');
   }
 
   const appEl = document.getElementById('app');

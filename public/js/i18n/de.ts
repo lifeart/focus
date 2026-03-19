@@ -196,6 +196,18 @@ export const de: TranslationTable = {
   'onboarding.goal.easy': 'Leichter Einstieg',
   'onboarding.goal.optimal': 'Optimal',
   'onboarding.goal.advanced': 'Fortgeschritten',
+  'onboarding.welcomeDetail': 'Wissenschaftlich fundierte \u00DCbungen zur Verbesserung von Aufmerksamkeit, Ged\u00E4chtnis und Selbstkontrolle',
+  'onboarding.welcomeFeature1': 'Personalisiertes kognitives Training',
+  'onboarding.welcomeFeature2': 'Verfolge deinen Fortschritt',
+  'onboarding.welcomeFeature3': 'Nur wenige Minuten am Tag',
+  'onboarding.miniTestWhy': 'Lass uns sehen, wo du stehst. Dieser Schnelltest misst deine Reaktionsgeschwindigkeit und Impulskontrolle.',
+  'onboarding.legendGo': 'Kreis = Tippen!',
+  'onboarding.legendNoGo': 'Quadrat = Nicht tippen!',
+  'onboarding.resultContext': 'Das ist dein Ausgangspunkt. Regelm\u00E4\u00DFiges Training verbessert dein Ergebnis.',
+  'onboarding.stepOf': 'Schritt {current} von {total}',
+  'onboarding.goalExplain': 'Kurze t\u00E4gliche Sitzungen sind effektiver als lange seltene.',
+  'onboarding.nameExplain': 'Wir nutzen deinen Namen zur Personalisierung.',
+  'onboarding.colorExplain': 'W\u00E4hle eine Avatarfarbe. Neue Stile schaltest du mit h\u00F6herem Level frei.',
 
   // Results
   'results.noData': 'Keine Ergebnisdaten verf\u00FCgbar.',

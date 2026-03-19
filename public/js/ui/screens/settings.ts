@@ -6,7 +6,6 @@ import { exportData, importData } from '../../core/storage.js';
 import { getLevel } from '../../core/progression.js';
 import { createDisposables } from '../../core/disposables.js';
 import { t } from '../../core/i18n.js';
-import { setLocale } from '../../core/i18n.js';
 import type { TranslationKey } from '../../i18n/keys.js';
 
 // ─── Render Settings ────────────────────────────────────────────────
@@ -259,11 +258,9 @@ export const renderSettings: ScreenRender = (container, _params) => {
         appState.updateData((d) => {
           d.settings.locale = locale;
         });
-        setLocale(locale);
-        appState.emit({ type: 'settings-changed', settings: appState.getData().settings });
-        // Force re-render by navigating to settings again
-        window.location.hash = '';
-        window.location.hash = '#/settings';
+        appState.flush();
+        // Reload the app to apply new language everywhere
+        window.location.reload();
       });
 
       chips.appendChild(chip);

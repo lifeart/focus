@@ -196,6 +196,18 @@ export const en: TranslationTable = {
   'onboarding.goal.easy': 'Easy start',
   'onboarding.goal.optimal': 'Optimal',
   'onboarding.goal.advanced': 'Advanced',
+  'onboarding.welcomeDetail': 'Science-based exercises to improve attention, memory, and self-control',
+  'onboarding.welcomeFeature1': 'Personalized cognitive training',
+  'onboarding.welcomeFeature2': 'Track your progress over time',
+  'onboarding.welcomeFeature3': 'Just a few minutes a day',
+  'onboarding.miniTestWhy': 'Let\'s see where you are now. This quick test measures your reaction speed and impulse control.',
+  'onboarding.legendGo': 'Circle = Tap!',
+  'onboarding.legendNoGo': 'Square = Don\'t tap!',
+  'onboarding.resultContext': 'This is your starting point. Training regularly will improve your score.',
+  'onboarding.stepOf': 'Step {current} of {total}',
+  'onboarding.goalExplain': 'Short daily sessions are more effective than long infrequent ones.',
+  'onboarding.nameExplain': 'We\'ll use this to personalize your experience.',
+  'onboarding.colorExplain': 'Pick a color for your avatar. You\'ll unlock more styles as you level up.',
 
   // Results
   'results.noData': 'No result data available.',

@@ -163,6 +163,18 @@ export interface TranslationTable {
   'onboarding.goal.easy': string;
   'onboarding.goal.optimal': string;
   'onboarding.goal.advanced': string;
+  'onboarding.welcomeDetail': string;
+  'onboarding.welcomeFeature1': string;
+  'onboarding.welcomeFeature2': string;
+  'onboarding.welcomeFeature3': string;
+  'onboarding.miniTestWhy': string;
+  'onboarding.legendGo': string;
+  'onboarding.legendNoGo': string;
+  'onboarding.resultContext': string;
+  'onboarding.stepOf': string;
+  'onboarding.goalExplain': string;
+  'onboarding.nameExplain': string;
+  'onboarding.colorExplain': string;
 
   // Results
   'results.noData': string;

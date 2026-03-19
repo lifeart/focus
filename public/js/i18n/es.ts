@@ -196,6 +196,18 @@ export const es: TranslationTable = {
   'onboarding.goal.easy': 'F\u00E1cil',
   'onboarding.goal.optimal': '\u00D3ptimo',
   'onboarding.goal.advanced': 'Avanzado',
+  'onboarding.welcomeDetail': 'Ejercicios cient\u00EDficos para mejorar la atenci\u00F3n, la memoria y el autocontrol',
+  'onboarding.welcomeFeature1': 'Entrenamiento cognitivo personalizado',
+  'onboarding.welcomeFeature2': 'Sigue tu progreso a lo largo del tiempo',
+  'onboarding.welcomeFeature3': 'Solo unos minutos al d\u00EDa',
+  'onboarding.miniTestWhy': 'Veamos d\u00F3nde est\u00E1s ahora. Esta prueba r\u00E1pida mide tu velocidad de reacci\u00F3n y control de impulsos.',
+  'onboarding.legendGo': 'C\u00EDrculo = \u00A1Toca!',
+  'onboarding.legendNoGo': 'Cuadrado = \u00A1No toques!',
+  'onboarding.resultContext': 'Este es tu punto de partida. Entrenar regularmente mejorar\u00E1 tu puntuaci\u00F3n.',
+  'onboarding.stepOf': 'Paso {current} de {total}',
+  'onboarding.goalExplain': 'Sesiones cortas diarias son m\u00E1s efectivas que largas sesiones espo\u00E1rdicas.',
+  'onboarding.nameExplain': 'Usaremos tu nombre para personalizar la experiencia.',
+  'onboarding.colorExplain': 'Elige un color de avatar. Desbloquear\u00E1s m\u00E1s estilos al subir de nivel.',
 
   // Results
   'results.noData': 'No hay datos de resultado.',

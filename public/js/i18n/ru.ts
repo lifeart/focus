@@ -196,6 +196,18 @@ export const ru: TranslationTable = {
   'onboarding.goal.easy': 'Легко начать',
   'onboarding.goal.optimal': 'Оптимально',
   'onboarding.goal.advanced': 'Для продвинутых',
+  'onboarding.welcomeDetail': 'Научные упражнения для улучшения внимания, памяти и самоконтроля',
+  'onboarding.welcomeFeature1': 'Персональная когнитивная тренировка',
+  'onboarding.welcomeFeature2': 'Отслеживание прогресса',
+  'onboarding.welcomeFeature3': 'Всего несколько минут в день',
+  'onboarding.miniTestWhy': 'Давай узнаем твой текущий уровень. Этот быстрый тест измерит скорость реакции и контроль импульсов.',
+  'onboarding.legendGo': 'Круг = Нажми!',
+  'onboarding.legendNoGo': 'Квадрат = Не нажимай!',
+  'onboarding.resultContext': 'Это твоя отправная точка. Регулярные тренировки улучшат результат.',
+  'onboarding.stepOf': 'Шаг {current} из {total}',
+  'onboarding.goalExplain': 'Короткие ежедневные сессии эффективнее длинных редких.',
+  'onboarding.nameExplain': 'Мы используем имя для персонализации.',
+  'onboarding.colorExplain': 'Выбери цвет аватара. Новые стили откроются с повышением уровня.',
 
   // Results
   'results.noData': 'Нет данных о результате.',

@@ -196,6 +196,18 @@ export const fr: TranslationTable = {
   'onboarding.goal.easy': 'Facile',
   'onboarding.goal.optimal': 'Optimal',
   'onboarding.goal.advanced': 'Avanc\u00E9',
+  'onboarding.welcomeDetail': 'Des exercices scientifiques pour am\u00E9liorer l\u2019attention, la m\u00E9moire et le contr\u00F4le de soi',
+  'onboarding.welcomeFeature1': 'Entra\u00EEnement cognitif personnalis\u00E9',
+  'onboarding.welcomeFeature2': 'Suivez vos progr\u00E8s au fil du temps',
+  'onboarding.welcomeFeature3': 'Quelques minutes par jour suffisent',
+  'onboarding.miniTestWhy': 'Voyons o\u00F9 vous en \u00EAtes. Ce test rapide mesure votre vitesse de r\u00E9action et votre contr\u00F4le des impulsions.',
+  'onboarding.legendGo': 'Cercle = Appuyez !',
+  'onboarding.legendNoGo': 'Carr\u00E9 = N\u2019appuyez pas !',
+  'onboarding.resultContext': 'C\u2019est votre point de d\u00E9part. Un entra\u00EEnement r\u00E9gulier am\u00E9liorera votre score.',
+  'onboarding.stepOf': '\u00C9tape {current} sur {total}',
+  'onboarding.goalExplain': 'De courtes sessions quotidiennes sont plus efficaces que de longues sessions rares.',
+  'onboarding.nameExplain': 'Nous utiliserons votre nom pour personnaliser l\u2019exp\u00E9rience.',
+  'onboarding.colorExplain': 'Choisissez une couleur d\u2019avatar. De nouveaux styles se d\u00E9bloqueront avec votre niveau.',
 
   // Results
   'results.noData': 'Aucune donn\u00E9e de r\u00E9sultat.',

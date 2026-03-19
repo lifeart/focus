@@ -9,6 +9,13 @@ const ASSETS = [
   './layout.css',
   './exercises.css',
   './animations.css',
+  './fonts.css',
+  './fonts/inter-cyrillic-ext.woff2',
+  './fonts/inter-cyrillic.woff2',
+  './fonts/inter-latin-ext.woff2',
+  './fonts/inter-latin.woff2',
+  './fonts/space-grotesk-latin-ext.woff2',
+  './fonts/space-grotesk-latin.woff2',
   './favicon.svg',
   './manifest.json'
 ];
