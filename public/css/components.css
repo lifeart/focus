@@ -410,31 +410,7 @@
   color: var(--text);
 }
 
-/* ── Toast / Notification ── */
-.toast {
-  position: fixed;
-  top: var(--space-lg);
-  left: 50%;
-  transform: translateX(-50%) translateY(-100%);
-  padding: 0.75rem 1.25rem;
-  background-color: var(--surface);
-  color: var(--text);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  z-index: var(--z-toast);
-  opacity: 0;
-  transition:
-    transform var(--transition-normal),
-    opacity var(--transition-normal);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.toast--visible {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
+/* Toast styles defined in layout.css (with safe-area-inset-top) */
 
 .toast--success {
   border-left: 3px solid var(--success);
