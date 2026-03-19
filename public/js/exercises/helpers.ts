@@ -137,6 +137,31 @@ export function calculateCV(values: number[]): number {
   return Math.sqrt(variance) / mean;
 }
 
+// Calculate lapse rate: proportion of RTs > mean + 3*SD
+export function calculateLapseRate(rts: number[]): number {
+  if (rts.length < 3) return 0;
+  const mean = rts.reduce((a, b) => a + b, 0) / rts.length;
+  const variance = rts.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / rts.length;
+  const sd = Math.sqrt(variance);
+  if (sd === 0) return 0;
+  const threshold = mean + 3 * sd;
+  const lapseCount = rts.filter(rt => rt > threshold).length;
+  return lapseCount / rts.length;
+}
+
+// Calculate search slope via linear regression (ms per additional item)
+export function calculateSearchSlope(sizeRtPairs: { size: number; rt: number }[]): number {
+  if (sizeRtPairs.length < 2) return 0;
+  const n = sizeRtPairs.length;
+  const sumX = sizeRtPairs.reduce((s, p) => s + p.size, 0);
+  const sumY = sizeRtPairs.reduce((s, p) => s + p.rt, 0);
+  const sumXY = sizeRtPairs.reduce((s, p) => s + p.size * p.rt, 0);
+  const sumXX = sizeRtPairs.reduce((s, p) => s + p.size * p.size, 0);
+  const denom = n * sumXX - sumX * sumX;
+  if (denom === 0) return 0;
+  return (n * sumXY - sumX * sumY) / denom;
+}
+
 // Calculate d-prime (signal detection theory)
 export function calculateDPrime(hitRate: number, falseAlarmRate: number): number {
   // Clamp rates to avoid infinite z-scores

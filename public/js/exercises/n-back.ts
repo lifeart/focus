@@ -1,18 +1,21 @@
 import type { Exercise, ExerciseResult, ExerciseMetrics, DifficultyParams, SoundManager } from '../types.js';
 import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
-import { createExerciseTimer, formatTime, calculateDPrime } from './helpers.js';
+import { createExerciseTimer, formatTime, calculateDPrime, calculateCV, calculateLapseRate } from './helpers.js';
 import { t } from '../core/i18n.js';
 
 const DURATION_MS = 300_000; // 5 minutes
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 const MATCH_RATE = 0.3;
+const LURE_RATE = 0.15; // 15% of non-target trials are lures (only at level 3+)
 
 interface TrialRecord {
   letter: string;
   isMatch: boolean;
+  isLure: boolean; // matches at N±1 but not N
   responded: boolean; // user pressed Match
   stimulusShownAt: number;
+  rt: number | null; // response time for IIV tracking
 }
 
 export function createNBack(level: number, params: DifficultyParams, sound: SoundManager): Exercise {
@@ -39,17 +42,43 @@ export function createNBack(level: number, params: DifficultyParams, sound: Soun
 
   const estimatedTrials = Math.floor(DURATION_MS / stimulusInterval);
 
+  // Track which positions are lure trials
+  const lurePositions = new Set<number>();
+
   // Pre-generate the full sequence
   function generateSequence(): string[] {
     const totalStimuli = estimatedTrials + 5; // a few extra
     const seq: string[] = [];
+    const useLures = level >= 3; // Lure trials only at difficulty level 3+
 
     for (let i = 0; i < totalStimuli; i++) {
       if (i >= nLevel && Math.random() < MATCH_RATE) {
         // Make it a match: use the letter from N positions back
         seq.push(seq[i - nLevel]);
       } else if (i >= nLevel) {
-        // Pick a random letter that does NOT match the one N positions back
+        // Non-target trial: possibly make it a lure
+        if (useLures && Math.random() < LURE_RATE) {
+          // Lure: match at N+1 or N-1 but NOT at N
+          const avoid = seq[i - nLevel];
+          let lureLetter: string | null = null;
+
+          // Try N-1 lure first
+          if (i >= nLevel + 1 && seq[i - nLevel + 1] !== avoid) {
+            lureLetter = seq[i - nLevel + 1];
+          }
+          // Try N+1 lure
+          if (!lureLetter && i >= nLevel - 1 && nLevel >= 2 && seq[i - nLevel - 1] !== avoid) {
+            lureLetter = seq[i - nLevel - 1];
+          }
+
+          if (lureLetter) {
+            seq.push(lureLetter);
+            lurePositions.add(i);
+            continue;
+          }
+        }
+
+        // Regular non-target: pick a letter that doesn't match N-back
         const avoid = seq[i - nLevel];
         let letter: string;
         do {
@@ -62,6 +91,10 @@ export function createNBack(level: number, params: DifficultyParams, sound: Soun
       }
     }
     return seq;
+  }
+
+  function isLureTrial(index: number): boolean {
+    return lurePositions.has(index);
   }
 
   function isMatchTrial(index: number): boolean {
@@ -88,8 +121,10 @@ export function createNBack(level: number, params: DifficultyParams, sound: Soun
     trials.push({
       letter,
       isMatch: match,
+      isLure: isLureTrial(currentIndex),
       responded: false,
       stimulusShownAt: Date.now(),
+      rt: null,
     });
 
     // Display the current letter with fade-in
@@ -156,6 +191,7 @@ export function createNBack(level: number, params: DifficultyParams, sound: Soun
     respondedThisTrial = true;
     const trial = trials[currentIndex];
     trial.responded = true;
+    trial.rt = Date.now() - trial.stimulusShownAt;
 
     if (trial.isMatch) {
       // Hit
@@ -212,6 +248,18 @@ export function createNBack(level: number, params: DifficultyParams, sound: Soun
       ? calculateDPrime(hitRate, falseAlarmRate)
       : 0;
 
+    // Lure trial metrics
+    const lureTrialsList = scoredTrials.filter(t => t.isLure);
+    const lureTrialsCount = lureTrialsList.length;
+    const lureFalseAlarms = lureTrialsList.filter(t => t.responded).length;
+
+    // IIV: CV across correct match RTs
+    const correctMatchRTs = matchTrials
+      .filter(t => t.responded && t.rt !== null)
+      .map(t => t.rt as number);
+    const rtVariability = calculateCV(correctMatchRTs);
+    const lapseRate = calculateLapseRate(correctMatchRTs);
+
     return {
       accuracy,
       totalTrials,
@@ -220,6 +268,10 @@ export function createNBack(level: number, params: DifficultyParams, sound: Soun
       misses,
       falseAlarms,
       dPrime: Math.round(dPrime * 1000) / 1000,
+      lureTrials: lureTrialsCount,
+      lureFalseAlarms,
+      rtVariability: Math.round(rtVariability * 1000) / 1000,
+      lapseRate: Math.round(lapseRate * 1000) / 1000,
     };
   }
 

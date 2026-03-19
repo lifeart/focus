@@ -232,6 +232,18 @@ export const es: TranslationTable = {
   'metric.completion': 'Completitud',
   'metric.ms': 'ms',
   'metric.sec': 's',
+  'metric.lapseRate': 'Lapsos de atenci\u00F3n',
+  'metric.searchSlope': 'Pendiente de b\u00FAsqueda',
+  'metric.rtNeutral': 'RT neutro',
+  'metric.facilitation': 'Facilitaci\u00F3n',
+  'metric.inhibitionCost': 'Costo de inhibici\u00F3n',
+  'metric.lureTrials': 'Ensayos se\u00F1uelo',
+  'metric.lureFalseAlarms': 'Falsas alarmas (se\u00F1uelo)',
+  'metric.msPerItem': 'ms/elemento',
+  'dashboard.takeBaseline': 'Evaluaci\u00F3n de base',
+  'dashboard.baselinePrompt': 'Establece tu l\u00EDnea base para seguir tu progreso',
+  'baseline.title': 'Evaluaci\u00F3n de base',
+  'baseline.improvement': 'Mejora desde la base',
 
   // Exercise select
   'exerciseSelect.title': 'Elegir ejercicio',

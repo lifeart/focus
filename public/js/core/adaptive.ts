@@ -14,25 +14,25 @@ export function updateDifficulty(state: DifficultyState, score: number): Difficu
   let lastMicroAdjustment = state.lastMicroAdjustment;
 
   // Level up conditions
-  if (score > 90) {
+  if (score > 88) {
     // Instant level up
     newLevel++;
   } else if (recentScores.length >= 3) {
     const last3 = recentScores.slice(-3);
     const avg = last3.reduce((a, b) => a + b, 0) / last3.length;
-    if (avg >= 80) {
+    if (avg >= 75) {
       newLevel++;
     }
   }
 
   // Level down conditions (only if no level up happened)
   if (newLevel === state.currentLevel) {
-    if (score < 40) {
+    if (score < 45) {
       // Instant level down
       newLevel--;
     } else if (recentScores.length >= 2) {
       const last2 = recentScores.slice(-2);
-      if (last2[0] < 60 && last2[1] < 60) {
+      if (last2[0] < 65 && last2[1] < 65) {
         newLevel--;
       }
     }
@@ -61,17 +61,23 @@ export function updateDifficulty(state: DifficultyState, score: number): Difficu
   };
 }
 
-export function getMicroAdjustment(params: DifficultyParams): DifficultyParams {
+export function getMicroAdjustment(params: DifficultyParams, exerciseId: ExerciseId): DifficultyParams {
   const adjusted: DifficultyParams = { ...params };
 
-  for (const key of Object.keys(adjusted)) {
-    if (key === 'level') continue;
-    const value = adjusted[key];
-    if (typeof value === 'number') {
-      // Random variation within +/-10%
-      const factor = 1 + (Math.random() * 0.2 - 0.1);
-      adjusted[key] = Math.round(value * factor);
-    }
+  // Deterministic staircase: on plateau, increment ONE parameter slightly
+  switch (exerciseId) {
+    case 'go-no-go':
+      if (adjusted.isiMax != null) adjusted.isiMax = Math.max(400, adjusted.isiMax - 50);
+      break;
+    case 'n-back':
+      if (adjusted.stimulusInterval != null) adjusted.stimulusInterval = Math.max(1500, adjusted.stimulusInterval - 100);
+      break;
+    case 'flanker':
+      if (adjusted.congruentRatio != null) adjusted.congruentRatio = Math.max(0.30, adjusted.congruentRatio - 0.02);
+      break;
+    // visual-search: grid size is discrete, no micro-adjustment
+    default:
+      break;
   }
 
   return adjusted;

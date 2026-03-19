@@ -8,6 +8,7 @@ import { renderBadgeCard } from '../components/badge-card.js';
 import { renderWeeklyRecap } from '../components/weekly-recap.js';
 import { createDisposables } from '../../core/disposables.js';
 import { t } from '../../core/i18n.js';
+import { getBaselineComparison } from '../../core/baseline.js';
 
 function formatFocusTime(ms: number): string {
   const totalMinutes = Math.floor(ms / 60000);
@@ -171,6 +172,49 @@ export const renderStats: ScreenRender = (container, _params) => {
   }
   breakdownCard.appendChild(breakdownList);
   container.appendChild(breakdownCard);
+
+  // ─── 4b. Baseline comparison ──────────────────────────────────────
+  if (data.baseline) {
+    const baselineCard = el('div', { className: 'card' }, [
+      el('h2', { className: 'card__title' }, [t('baseline.improvement')]),
+    ]);
+
+    const baselineList = el('div', { className: 'stats-breakdown' });
+    // For each exercise that has both a baseline and recent results, show improvement
+    for (const baselineResult of data.baseline.exercises) {
+      const exerciseId = baselineResult.exerciseId;
+      const config = EXERCISE_CONFIGS[exerciseId];
+      if (!config) continue;
+
+      // Find the most recent result for this exercise
+      const latestResult = [...exerciseHistory]
+        .reverse()
+        .find(r => r.exerciseId === exerciseId);
+      if (!latestResult) continue;
+
+      const comparison = getBaselineComparison(data.baseline, latestResult);
+      if (!comparison) continue;
+
+      const sign = comparison.improvement >= 0 ? '+' : '';
+      const exerciseName = t(`exercise.${exerciseId}.name` as any);
+
+      const row = el('div', { className: 'stats-breakdown__row' }, [
+        el('div', { className: 'stats-breakdown__info' }, [
+          el('span', { className: 'stats-breakdown__icon' }, [config.icon]),
+          el('span', { className: 'stats-breakdown__name' }, [exerciseName]),
+          el('span', { className: 'stats-breakdown__time' }, [
+            `${comparison.baselineScore} → ${comparison.currentScore} (${sign}${comparison.improvement})`,
+          ]),
+        ]),
+      ]);
+      baselineList.appendChild(row);
+    }
+
+    if (baselineList.childElementCount > 0) {
+      baselineCard.appendChild(baselineList);
+      container.appendChild(baselineCard);
+    }
+  }
 
   // ─── 5. All badges ─────────────────────────────────────────────────
   const badgesCard = el('div', { className: 'card' }, [

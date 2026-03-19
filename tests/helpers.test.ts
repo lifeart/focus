@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateCV, calculateDPrime, jitteredInterval, formatTime } from '../public/js/exercises/helpers';
+import { calculateCV, calculateDPrime, calculateLapseRate, calculateSearchSlope, jitteredInterval, formatTime } from '../public/js/exercises/helpers';
 
 describe('calculateCV', () => {
   it('returns 0 for empty array', () => {
@@ -25,6 +25,63 @@ describe('calculateDPrime', () => {
   it('returns near zero for chance performance', () => {
     const dp = calculateDPrime(0.5, 0.5);
     expect(Math.abs(dp)).toBeLessThan(0.1);
+  });
+});
+
+describe('calculateLapseRate', () => {
+  it('returns 0 for empty array', () => {
+    expect(calculateLapseRate([])).toBe(0);
+  });
+
+  it('returns 0 for fewer than 3 values', () => {
+    expect(calculateLapseRate([100, 200])).toBe(0);
+  });
+
+  it('returns 0 when all values are identical', () => {
+    expect(calculateLapseRate([100, 100, 100, 100])).toBe(0);
+  });
+
+  it('detects extreme outlier as lapse', () => {
+    // 19 normal values around 300ms, 1 extreme at 5000ms
+    const rts = [300, 310, 290, 305, 295, 300, 310, 290, 305, 300,
+                 300, 310, 290, 305, 295, 300, 310, 290, 305, 5000];
+    const rate = calculateLapseRate(rts);
+    expect(rate).toBeGreaterThan(0);
+    expect(rate).toBeLessThanOrEqual(1);
+  });
+
+  it('returns 0 when no outliers exist', () => {
+    const rts = [300, 310, 290, 305, 295, 300, 310, 290, 305, 300];
+    const rate = calculateLapseRate(rts);
+    expect(rate).toBe(0);
+  });
+});
+
+describe('calculateSearchSlope', () => {
+  it('returns 0 for empty or single-point data', () => {
+    expect(calculateSearchSlope([])).toBe(0);
+    expect(calculateSearchSlope([{ size: 9, rt: 500 }])).toBe(0);
+  });
+
+  it('returns positive slope for increasing RT with size', () => {
+    const pairs = [
+      { size: 9, rt: 500 },
+      { size: 16, rt: 700 },
+      { size: 25, rt: 900 },
+    ];
+    const slope = calculateSearchSlope(pairs);
+    expect(slope).toBeGreaterThan(0);
+    expect(slope).toBeCloseTo(25, 0); // ~25ms per item
+  });
+
+  it('returns negative slope for decreasing RT', () => {
+    const pairs = [
+      { size: 9, rt: 900 },
+      { size: 16, rt: 700 },
+      { size: 25, rt: 500 },
+    ];
+    const slope = calculateSearchSlope(pairs);
+    expect(slope).toBeLessThan(0);
   });
 });
 

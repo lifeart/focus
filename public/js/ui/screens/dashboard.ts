@@ -8,6 +8,7 @@ import { renderStreakDisplay } from '../components/streak-display.js';
 import { renderProgressBar } from '../components/progress-bar.js';
 import { createDisposables } from '../../core/disposables.js';
 import { t, tPlural } from '../../core/i18n.js';
+import { shouldPromptBaseline } from '../../core/baseline.js';
 
 // ─── Mood config ────────────────────────────────────────────────────
 
@@ -248,6 +249,20 @@ export const renderDashboard: ScreenRender = (container, _params) => {
   });
   disposables.addCleanup(cleanupChallenge);
   grid.appendChild(challengeCard);
+
+  // ── 5b. Baseline prompt ────────────────────────────────────────────
+
+  if (data.onboardingComplete && shouldPromptBaseline(data.baseline, progression.totalSessionCount)) {
+    const baselineCard = el('div', { className: 'card bento-grid__item--wide' }, [
+      el('h3', { className: 'card__title' }, [t('baseline.title')]),
+      el('p', { className: 'card__subtitle' }, [t('dashboard.baselinePrompt')]),
+      el('a', {
+        href: '#/play/baseline',
+        className: 'btn btn--secondary btn--full',
+      }, [t('dashboard.takeBaseline')]),
+    ]);
+    grid.appendChild(baselineCard);
+  }
 
   // ── 6. Quick Start button ─────────────────────────────────────────
 

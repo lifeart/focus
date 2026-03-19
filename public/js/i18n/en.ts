@@ -232,6 +232,18 @@ export const en: TranslationTable = {
   'metric.completion': 'Completion',
   'metric.ms': 'ms',
   'metric.sec': 's',
+  'metric.lapseRate': 'Attention lapses',
+  'metric.searchSlope': 'Search slope',
+  'metric.rtNeutral': 'RT neutral',
+  'metric.facilitation': 'Facilitation',
+  'metric.inhibitionCost': 'Inhibition cost',
+  'metric.lureTrials': 'Lure trials',
+  'metric.lureFalseAlarms': 'Lure false alarms',
+  'metric.msPerItem': 'ms/item',
+  'dashboard.takeBaseline': 'Take Baseline Assessment',
+  'dashboard.baselinePrompt': 'Establish your baseline to track improvement over time',
+  'baseline.title': 'Baseline Assessment',
+  'baseline.improvement': 'Improvement from baseline',
 
   // Exercise select
   'exerciseSelect.title': 'Choose Exercise',

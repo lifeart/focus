@@ -1,15 +1,17 @@
 import type { Exercise, ExerciseResult, ExerciseMetrics, DifficultyParams, SoundManager } from '../types.js';
 import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
-import { createExerciseTimer, jitteredInterval, showFeedback, formatTime } from './helpers.js';
+import { createExerciseTimer, jitteredInterval, showFeedback, formatTime, calculateCV, calculateLapseRate } from './helpers.js';
 import { t } from '../core/i18n.js';
 
 const DURATION_MS = 180_000; // 3 minutes
 
 type Direction = 'left' | 'right';
+type TrialType = 'congruent' | 'incongruent' | 'neutral';
 
 interface TrialRecord {
-  congruent: boolean;
+  trialType: TrialType;
+  congruent: boolean; // kept for backward compat
   centerDirection: Direction;
   responded: boolean;
   correct: boolean;
@@ -47,8 +49,14 @@ export function createFlanker(level: number, params: DifficultyParams, sound: So
   const avgTrialTime = responseDeadline * 0.5 + avgIsi; // assume ~half deadline on avg
   const estimatedTrials = Math.round(DURATION_MS / avgTrialTime);
 
-  function isCongruent(): boolean {
-    return Math.random() < congruentRatio;
+  const NEUTRAL_RATIO = 0.20;
+
+  function pickTrialType(): TrialType {
+    const r = Math.random();
+    if (r < NEUTRAL_RATIO) return 'neutral';
+    // Remaining 80% split by congruentRatio
+    const adjustedThreshold = NEUTRAL_RATIO + (1 - NEUTRAL_RATIO) * congruentRatio;
+    return r < adjustedThreshold ? 'congruent' : 'incongruent';
   }
 
   function randomDirection(): Direction {
@@ -73,15 +81,28 @@ export function createFlanker(level: number, params: DifficultyParams, sound: So
     return span;
   }
 
+  function createNeutralSpan(): HTMLElement {
+    const span = el('span');
+    span.textContent = '\u2014'; // em dash
+    span.style.fontSize = '3rem';
+    span.style.margin = '0 0.25rem';
+    span.style.display = 'inline-block';
+    span.style.userSelect = 'none';
+    span.style.lineHeight = '1';
+    span.style.color = '#e0e0e0';
+    return span;
+  }
+
   function showStimulus(): void {
     if (!started || paused || !stimulusArea) return;
 
     trialIndex++;
-    const congruent = isCongruent();
+    const trialType = pickTrialType();
     const centerDir = randomDirection();
-    const flankerDir: Direction = congruent ? centerDir : (centerDir === 'left' ? 'right' : 'left');
+    const congruent = trialType === 'congruent';
 
     const trial: TrialRecord = {
+      trialType,
       congruent,
       centerDirection: centerDir,
       responded: false,
@@ -93,18 +114,28 @@ export function createFlanker(level: number, params: DifficultyParams, sound: So
     // Clear stimulus area
     stimulusArea.innerHTML = '';
 
-    // Build row of 5 arrows: flanker flanker CENTER flanker flanker
+    // Build row of 5 items: flanker flanker CENTER flanker flanker
     const row = el('div');
     row.style.display = 'flex';
     row.style.alignItems = 'center';
     row.style.justifyContent = 'center';
     row.style.gap = '0.3rem';
 
-    row.appendChild(createArrowSpan(flankerDir, false));
-    row.appendChild(createArrowSpan(flankerDir, false));
-    row.appendChild(createArrowSpan(centerDir, true));
-    row.appendChild(createArrowSpan(flankerDir, false));
-    row.appendChild(createArrowSpan(flankerDir, false));
+    if (trialType === 'neutral') {
+      // Neutral: flankers are dashes, center is still an arrow
+      row.appendChild(createNeutralSpan());
+      row.appendChild(createNeutralSpan());
+      row.appendChild(createArrowSpan(centerDir, true));
+      row.appendChild(createNeutralSpan());
+      row.appendChild(createNeutralSpan());
+    } else {
+      const flankerDir: Direction = congruent ? centerDir : (centerDir === 'left' ? 'right' : 'left');
+      row.appendChild(createArrowSpan(flankerDir, false));
+      row.appendChild(createArrowSpan(flankerDir, false));
+      row.appendChild(createArrowSpan(centerDir, true));
+      row.appendChild(createArrowSpan(flankerDir, false));
+      row.appendChild(createArrowSpan(flankerDir, false));
+    }
 
     stimulusArea.appendChild(row);
     stimulusShownAt = Date.now();
@@ -230,11 +261,15 @@ export function createFlanker(level: number, params: DifficultyParams, sound: So
     const accuracy = totalTrials > 0 ? correctTrials / totalTrials : 0;
 
     const correctCongruentRTs = trials
-      .filter(t => t.congruent && t.correct && t.rt !== null)
+      .filter(t => t.trialType === 'congruent' && t.correct && t.rt !== null)
       .map(t => t.rt as number);
 
     const correctIncongruentRTs = trials
-      .filter(t => !t.congruent && t.correct && t.rt !== null)
+      .filter(t => t.trialType === 'incongruent' && t.correct && t.rt !== null)
+      .map(t => t.rt as number);
+
+    const correctNeutralRTs = trials
+      .filter(t => t.trialType === 'neutral' && t.correct && t.rt !== null)
       .map(t => t.rt as number);
 
     const rtCongruent = correctCongruentRTs.length > 0
@@ -245,9 +280,28 @@ export function createFlanker(level: number, params: DifficultyParams, sound: So
       ? correctIncongruentRTs.reduce((a, b) => a + b, 0) / correctIncongruentRTs.length
       : 0;
 
+    const rtNeutral = correctNeutralRTs.length > 0
+      ? correctNeutralRTs.reduce((a, b) => a + b, 0) / correctNeutralRTs.length
+      : 0;
+
     const interferenceScore = (rtCongruent > 0 && rtIncongruent > 0)
       ? rtIncongruent - rtCongruent
       : 0;
+
+    const facilitationScore = (rtNeutral > 0 && rtCongruent > 0)
+      ? rtNeutral - rtCongruent
+      : 0;
+
+    const inhibitionCost = (rtIncongruent > 0 && rtNeutral > 0)
+      ? rtIncongruent - rtNeutral
+      : 0;
+
+    // IIV: CV across all correct RTs
+    const allCorrectRTs = trials
+      .filter(t => t.correct && t.rt !== null)
+      .map(t => t.rt as number);
+    const rtVariability = calculateCV(allCorrectRTs);
+    const lapseRate = calculateLapseRate(allCorrectRTs);
 
     return {
       accuracy,
@@ -255,7 +309,12 @@ export function createFlanker(level: number, params: DifficultyParams, sound: So
       correctTrials,
       rtCongruent: Math.round(rtCongruent),
       rtIncongruent: Math.round(rtIncongruent),
+      rtNeutral: Math.round(rtNeutral),
       interferenceScore: Math.round(interferenceScore),
+      facilitationScore: Math.round(facilitationScore),
+      inhibitionCost: Math.round(inhibitionCost),
+      rtVariability: Math.round(rtVariability * 1000) / 1000,
+      lapseRate: Math.round(lapseRate * 1000) / 1000,
     };
   }
 

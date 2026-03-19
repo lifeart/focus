@@ -1,7 +1,7 @@
 import type { Exercise, ExerciseResult, ExerciseMetrics, DifficultyParams, SoundManager, Disposables } from '../types.js';
 import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
-import { createExerciseTimer, jitteredInterval, showFeedback, formatTime, calculateCV } from './helpers.js';
+import { createExerciseTimer, jitteredInterval, showFeedback, formatTime, calculateCV, calculateLapseRate } from './helpers.js';
 import { t } from '../core/i18n.js';
 
 const DURATION_MS = 180_000; // 3 minutes
@@ -220,6 +220,10 @@ export function createGoNoGo(level: number, params: DifficultyParams, sound: Sou
 
     const rtVariability = calculateCV(correctGoRTs);
 
+    const totalNoGoTrials = trials.filter(t => !t.isGo).length;
+    const commissionRate = totalNoGoTrials > 0 ? commissionErrors / totalNoGoTrials : 0;
+    const lapseRate = calculateLapseRate(correctGoRTs);
+
     return {
       accuracy,
       totalTrials,
@@ -228,12 +232,19 @@ export function createGoNoGo(level: number, params: DifficultyParams, sound: Sou
       omissionErrors,
       meanRT: Math.round(meanRT),
       rtVariability: Math.round(rtVariability * 1000) / 1000,
+      lapseRate: Math.round(lapseRate * 1000) / 1000,
     };
   }
 
   function computeScore(metrics: ExerciseMetrics): number {
     const cv = metrics.rtVariability ?? 0;
-    const score = (metrics.accuracy * 0.7 + (1 - cv) * 0.3) * 100;
+    const totalNoGoTrials = trials.filter(t => !t.isGo).length;
+    const commissionRate = totalNoGoTrials > 0 ? (metrics.commissionErrors ?? 0) / totalNoGoTrials : 0;
+    // 50% inhibition control, 30% overall accuracy, 20% response stability
+    const inhibitionScore = (1 - commissionRate) * 50;
+    const accuracyScore = metrics.accuracy * 30;
+    const stabilityScore = (1 - cv) * 20;
+    const score = inhibitionScore + accuracyScore + stabilityScore;
     return Math.round(Math.max(0, Math.min(100, score)));
   }
 

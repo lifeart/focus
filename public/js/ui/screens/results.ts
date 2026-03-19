@@ -68,30 +68,51 @@ function getMetricsForExercise(result: ExerciseResult): MetricRow[] {
         { label: t('metric.omissions'), value: String(m.omissionErrors ?? 0) },
         { label: t('metric.avgRT'), value: m.meanRT != null ? formatMs(m.meanRT) : '—' },
         { label: t('metric.rtVariability'), value: m.rtVariability != null ? m.rtVariability.toFixed(2) : '—' },
+        { label: t('metric.lapseRate'), value: m.lapseRate != null ? formatPercent(m.lapseRate) : '—' },
       ];
 
-    case 'n-back':
-      return [
+    case 'n-back': {
+      const rows: MetricRow[] = [
         { label: t('metric.hits'), value: String(m.hits ?? 0) },
         { label: t('metric.omissions'), value: String(m.misses ?? 0) },
         { label: t('metric.falseAlarms'), value: String(m.falseAlarms ?? 0) },
         { label: t('metric.dPrime'), value: m.dPrime != null ? m.dPrime.toFixed(2) : '—' },
         { label: t('metric.accuracy'), value: formatPercent(m.accuracy) },
+        { label: t('metric.rtVariability'), value: m.rtVariability != null ? m.rtVariability.toFixed(2) : '—' },
+        { label: t('metric.lapseRate'), value: m.lapseRate != null ? formatPercent(m.lapseRate) : '—' },
       ];
+      if (m.lureTrials != null && m.lureTrials > 0) {
+        rows.push({ label: t('metric.lureTrials'), value: String(m.lureTrials) });
+        rows.push({ label: t('metric.lureFalseAlarms'), value: String(m.lureFalseAlarms ?? 0) });
+      }
+      return rows;
+    }
 
-    case 'flanker':
-      return [
+    case 'flanker': {
+      const rows: MetricRow[] = [
         { label: t('metric.accuracy'), value: formatPercent(m.accuracy) },
         { label: t('metric.rtCongruent'), value: m.rtCongruent != null ? formatMs(m.rtCongruent) : '—' },
         { label: t('metric.rtIncongruent'), value: m.rtIncongruent != null ? formatMs(m.rtIncongruent) : '—' },
         { label: t('metric.interference'), value: m.interferenceScore != null ? formatMs(m.interferenceScore) : '—' },
+        { label: t('metric.rtVariability'), value: m.rtVariability != null ? m.rtVariability.toFixed(2) : '—' },
+        { label: t('metric.lapseRate'), value: m.lapseRate != null ? formatPercent(m.lapseRate) : '—' },
       ];
+      if (m.rtNeutral != null && m.rtNeutral > 0) {
+        rows.push({ label: t('metric.rtNeutral'), value: formatMs(m.rtNeutral) });
+        rows.push({ label: t('metric.facilitation'), value: m.facilitationScore != null ? formatMs(m.facilitationScore) : '—' });
+        rows.push({ label: t('metric.inhibitionCost'), value: m.inhibitionCost != null ? formatMs(m.inhibitionCost) : '—' });
+      }
+      return rows;
+    }
 
     case 'visual-search':
       return [
         { label: t('metric.accuracy'), value: formatPercent(m.accuracy) },
         { label: t('metric.searchTime'), value: m.searchTime != null ? formatSeconds(m.searchTime / 1000) : '—' },
         { label: t('metric.itemsPerSec'), value: m.itemsPerSecond != null ? m.itemsPerSecond.toFixed(2) : '—' },
+        { label: t('metric.searchSlope'), value: m.searchSlope != null ? `${m.searchSlope.toFixed(1)} ${t('metric.msPerItem')}` : '—' },
+        { label: t('metric.rtVariability'), value: m.rtVariability != null ? m.rtVariability.toFixed(2) : '—' },
+        { label: t('metric.lapseRate'), value: m.lapseRate != null ? formatPercent(m.lapseRate) : '—' },
       ];
 
     case 'breathing':

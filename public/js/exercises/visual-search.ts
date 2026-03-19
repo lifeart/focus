@@ -1,7 +1,7 @@
 import type { Exercise, ExerciseResult, ExerciseMetrics, DifficultyParams, SoundManager } from '../types.js';
 import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
-import { createExerciseTimer, showFeedback, formatTime } from './helpers.js';
+import { createExerciseTimer, showFeedback, formatTime, calculateCV, calculateLapseRate, calculateSearchSlope } from './helpers.js';
 import { t } from '../core/i18n.js';
 
 const DURATION_MS = 180_000; // 3 minutes
@@ -14,14 +14,22 @@ interface TrialRecord {
   targetPresent: boolean;
   correct: boolean;
   rt: number | null; // reaction time in ms
+  trialGridSize: number; // grid size for this trial (varies for slope calculation)
 }
 
 export function createVisualSearch(level: number, params: DifficultyParams, sound: SoundManager): Exercise {
   const disposables = createDisposables();
   const timer = createExerciseTimer(DURATION_MS, disposables);
 
-  const gridSize = params.gridSize ?? 3;
-  const totalCells = gridSize * gridSize;
+  const baseGridSize = params.gridSize ?? 3;
+  // Vary grid size: base-1, base, base+1 (clamped to [3, 7])
+  const gridSizeVariants = [
+    Math.max(3, baseGridSize - 1),
+    baseGridSize,
+    Math.min(7, baseGridSize + 1),
+  ];
+  let currentGridSize = baseGridSize;
+  let totalCells = currentGridSize * currentGridSize;
 
   const trials: TrialRecord[] = [];
   let container: HTMLElement | null = null;
@@ -44,6 +52,10 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
   const estimatedTrials = Math.round(DURATION_MS / avgTrialTime);
 
   function generateGrid(): ShapeType[] {
+    // Pick a random grid size variant for this trial
+    currentGridSize = gridSizeVariants[Math.floor(Math.random() * gridSizeVariants.length)];
+    totalCells = currentGridSize * currentGridSize;
+
     const cells: ShapeType[] = [];
 
     // Decide target presence (50/50)
@@ -74,7 +86,7 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
 
   function createShapeElement(shape: ShapeType): HTMLElement {
     const div = el('div');
-    const size = Math.max(44, Math.floor(200 / gridSize));
+    const size = Math.max(44, Math.floor(200 / currentGridSize));
     div.style.width = `${size}px`;
     div.style.height = `${size}px`;
     div.style.cursor = 'pointer';
@@ -105,8 +117,10 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
     trialIndex++;
     const cells = generateGrid();
 
-    // Clear grid
+    // Clear grid and update layout for current grid size
     gridContainer.innerHTML = '';
+    gridContainer.style.gridTemplateColumns = `repeat(${currentGridSize}, 1fr)`;
+    gridContainer.style.maxWidth = `${currentGridSize * (Math.max(44, Math.floor(200 / currentGridSize)) + 8)}px`;
 
     // Render grid cells
     for (const shape of cells) {
@@ -143,12 +157,12 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
 
     if (currentTrialTargetPresent && clickedShape === 'red-circle') {
       // Correct: clicked the target
-      trials.push({ targetPresent: true, correct: true, rt });
+      trials.push({ targetPresent: true, correct: true, rt, trialGridSize: currentGridSize });
       sound.playCorrect();
       if (container) showFeedback(container, true, disposables);
     } else {
       // Incorrect: clicked wrong item (either wrong item in target-present, or any item in target-absent)
-      trials.push({ targetPresent: currentTrialTargetPresent, correct: false, rt });
+      trials.push({ targetPresent: currentTrialTargetPresent, correct: false, rt, trialGridSize: currentGridSize });
       sound.playIncorrect();
       if (container) showFeedback(container, false, disposables);
     }
@@ -166,12 +180,12 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
 
     if (!currentTrialTargetPresent) {
       // Correct: no target and user said so
-      trials.push({ targetPresent: false, correct: true, rt });
+      trials.push({ targetPresent: false, correct: true, rt, trialGridSize: currentGridSize });
       sound.playCorrect();
       if (container) showFeedback(container, true, disposables);
     } else {
       // Incorrect: target was present but user said no target
-      trials.push({ targetPresent: true, correct: false, rt });
+      trials.push({ targetPresent: true, correct: false, rt, trialGridSize: currentGridSize });
       sound.playIncorrect();
       if (container) showFeedback(container, false, disposables);
     }
@@ -187,12 +201,12 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
 
     if (currentTrialTargetPresent) {
       // Miss: target was present but user didn't respond
-      trials.push({ targetPresent: true, correct: false, rt: null });
+      trials.push({ targetPresent: true, correct: false, rt: null, trialGridSize: currentGridSize });
       sound.playIncorrect();
       if (container) showFeedback(container, false, disposables);
     } else {
       // Target-absent timeout: auto-proceed as correct-ish
-      trials.push({ targetPresent: false, correct: true, rt: null });
+      trials.push({ targetPresent: false, correct: true, rt: null, trialGridSize: currentGridSize });
     }
 
     clearGrid();
@@ -239,17 +253,38 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
     const accuracy = totalTrials > 0 ? correctTrials / totalTrials : 0;
 
     // Average search time for correct target-present trials only
-    const correctTargetPresentRTs = trials
-      .filter(t => t.targetPresent && t.correct && t.rt !== null)
-      .map(t => t.rt as number);
+    const correctTargetPresentTrials = trials
+      .filter(t => t.targetPresent && t.correct && t.rt !== null);
+
+    const correctTargetPresentRTs = correctTargetPresentTrials.map(t => t.rt as number);
 
     const searchTime = correctTargetPresentRTs.length > 0
       ? correctTargetPresentRTs.reduce((a, b) => a + b, 0) / correctTargetPresentRTs.length
       : 0;
 
+    const avgTotalCells = baseGridSize * baseGridSize;
     const itemsPerSecond = searchTime > 0
-      ? (totalCells / (searchTime / 1000))
+      ? (avgTotalCells / (searchTime / 1000))
       : 0;
+
+    // Search slope: RT vs set size (items = gridSize^2)
+    // Group correct target-present RTs by grid size, compute mean per size
+    const rtBySize = new Map<number, number[]>();
+    for (const t of correctTargetPresentTrials) {
+      const setSize = t.trialGridSize * t.trialGridSize;
+      if (!rtBySize.has(setSize)) rtBySize.set(setSize, []);
+      rtBySize.get(setSize)!.push(t.rt as number);
+    }
+    const sizeRtPairs: { size: number; rt: number }[] = [];
+    for (const [size, rts] of rtBySize) {
+      const meanRt = rts.reduce((a, b) => a + b, 0) / rts.length;
+      sizeRtPairs.push({ size, rt: meanRt });
+    }
+    const searchSlope = calculateSearchSlope(sizeRtPairs);
+
+    // IIV and lapse rate
+    const rtVariability = calculateCV(correctTargetPresentRTs);
+    const lapseRate = calculateLapseRate(correctTargetPresentRTs);
 
     return {
       accuracy,
@@ -257,6 +292,9 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
       correctTrials,
       searchTime: Math.round(searchTime),
       itemsPerSecond: Math.round(itemsPerSecond * 100) / 100,
+      searchSlope: Math.round(searchSlope * 100) / 100,
+      rtVariability: Math.round(rtVariability * 1000) / 1000,
+      lapseRate: Math.round(lapseRate * 1000) / 1000,
     };
   }
 
@@ -282,11 +320,11 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
 
       gridContainer = el('div', { className: 'visual-search-grid' });
       gridContainer.style.display = 'grid';
-      gridContainer.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+      gridContainer.style.gridTemplateColumns = `repeat(${baseGridSize}, 1fr)`;
       gridContainer.style.gap = '8px';
       gridContainer.style.justifyItems = 'center';
       gridContainer.style.alignItems = 'center';
-      gridContainer.style.maxWidth = `${gridSize * (Math.max(44, Math.floor(200 / gridSize)) + 8)}px`;
+      gridContainer.style.maxWidth = `${baseGridSize * (Math.max(44, Math.floor(200 / baseGridSize)) + 8)}px`;
       gridContainer.style.margin = '1.5rem auto';
       gridContainer.style.padding = '1rem';
 

@@ -199,6 +199,18 @@ export interface TranslationTable {
   'metric.completion': string;
   'metric.ms': string;
   'metric.sec': string;
+  'metric.lapseRate': string;
+  'metric.searchSlope': string;
+  'metric.rtNeutral': string;
+  'metric.facilitation': string;
+  'metric.inhibitionCost': string;
+  'metric.lureTrials': string;
+  'metric.lureFalseAlarms': string;
+  'metric.msPerItem': string;
+  'dashboard.takeBaseline': string;
+  'dashboard.baselinePrompt': string;
+  'baseline.title': string;
+  'baseline.improvement': string;
 
   // Exercise select
   'exerciseSelect.title': string;

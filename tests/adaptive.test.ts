@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { updateDifficulty, getExerciseParams, isPlateauDetected } from '../public/js/core/adaptive';
+import { updateDifficulty, getExerciseParams, isPlateauDetected, getMicroAdjustment } from '../public/js/core/adaptive';
 import type { DifficultyState } from '../public/js/types';
 
 // Helper to create initial state
@@ -14,28 +14,46 @@ function makeState(overrides?: Partial<DifficultyState>): DifficultyState {
 }
 
 describe('updateDifficulty', () => {
-  it('levels up on single score > 90', () => {
+  it('levels up on single score > 88', () => {
     const state = makeState({ currentLevel: 5 });
-    const result = updateDifficulty(state, 92);
+    const result = updateDifficulty(state, 90);
     expect(result.currentLevel).toBe(6);
   });
 
-  it('levels up when avg of last 3 >= 80', () => {
-    const state = makeState({ currentLevel: 3, recentScores: [82, 85] });
-    const result = updateDifficulty(state, 80);
-    expect(result.currentLevel).toBe(4);
-  });
-
-  it('levels down on single score < 40', () => {
+  it('levels up on score of 89 (> 88 threshold)', () => {
     const state = makeState({ currentLevel: 5 });
-    const result = updateDifficulty(state, 35);
+    const result = updateDifficulty(state, 89);
+    expect(result.currentLevel).toBe(6);
+  });
+
+  it('levels up when avg of last 3 >= 75', () => {
+    const state = makeState({ currentLevel: 3, recentScores: [76, 78] });
+    const result = updateDifficulty(state, 75);
     expect(result.currentLevel).toBe(4);
   });
 
-  it('levels down when 2 consecutive scores < 60', () => {
-    const state = makeState({ currentLevel: 5, recentScores: [55] });
-    const result = updateDifficulty(state, 58);
+  it('does not level up when avg of last 3 < 75', () => {
+    const state = makeState({ currentLevel: 3, recentScores: [70, 72] });
+    const result = updateDifficulty(state, 74);
+    expect(result.currentLevel).toBe(3);
+  });
+
+  it('levels down on single score < 45', () => {
+    const state = makeState({ currentLevel: 5 });
+    const result = updateDifficulty(state, 44);
     expect(result.currentLevel).toBe(4);
+  });
+
+  it('levels down when 2 consecutive scores < 65', () => {
+    const state = makeState({ currentLevel: 5, recentScores: [60] });
+    const result = updateDifficulty(state, 62);
+    expect(result.currentLevel).toBe(4);
+  });
+
+  it('does not level down when scores are between 65 and 74', () => {
+    const state = makeState({ currentLevel: 5, recentScores: [66] });
+    const result = updateDifficulty(state, 68);
+    expect(result.currentLevel).toBe(5);
   });
 
   it('clamps level to minimum 1', () => {
@@ -63,7 +81,7 @@ describe('updateDifficulty', () => {
   });
 
   it('keeps recent scores trimmed to 5', () => {
-    const state = makeState({ recentScores: [60, 65, 70, 75, 80] });
+    const state = makeState({ recentScores: [60, 65, 70, 72, 74] });
     const result = updateDifficulty(state, 72);
     expect(result.recentScores.length).toBe(5);
   });
@@ -86,5 +104,37 @@ describe('getExerciseParams', () => {
   it('clamps level to valid range', () => {
     const params = getExerciseParams('go-no-go', 99);
     expect(params.level).toBe(10);
+  });
+});
+
+describe('getMicroAdjustment (deterministic staircase)', () => {
+  it('reduces isiMax for go-no-go', () => {
+    const params = getExerciseParams('go-no-go', 5);
+    const adjusted = getMicroAdjustment(params, 'go-no-go');
+    expect(adjusted.isiMax).toBe(params.isiMax! - 50);
+  });
+
+  it('reduces stimulusInterval for n-back', () => {
+    const params = getExerciseParams('n-back', 5);
+    const adjusted = getMicroAdjustment(params, 'n-back');
+    expect(adjusted.stimulusInterval).toBe(params.stimulusInterval! - 100);
+  });
+
+  it('reduces congruentRatio for flanker', () => {
+    const params = getExerciseParams('flanker', 5);
+    const adjusted = getMicroAdjustment(params, 'flanker');
+    expect(adjusted.congruentRatio).toBeCloseTo(params.congruentRatio! - 0.02, 5);
+  });
+
+  it('does not change visual-search params', () => {
+    const params = getExerciseParams('visual-search', 5);
+    const adjusted = getMicroAdjustment(params, 'visual-search');
+    expect(adjusted.gridSize).toBe(params.gridSize);
+  });
+
+  it('clamps isiMax to minimum 400', () => {
+    const params = { level: 10, isiMin: 500, isiMax: 420 };
+    const adjusted = getMicroAdjustment(params, 'go-no-go');
+    expect(adjusted.isiMax).toBe(400);
   });
 });

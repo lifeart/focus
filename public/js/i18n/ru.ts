@@ -232,6 +232,18 @@ export const ru: TranslationTable = {
   'metric.completion': 'Завершённость',
   'metric.ms': 'мс',
   'metric.sec': 'с',
+  'metric.lapseRate': 'Провалы внимания',
+  'metric.searchSlope': 'Наклон поиска',
+  'metric.rtNeutral': 'RT нейтральные',
+  'metric.facilitation': 'Фасилитация',
+  'metric.inhibitionCost': 'Стоимость торможения',
+  'metric.lureTrials': 'Обманные пробы',
+  'metric.lureFalseAlarms': 'Ложные тревоги (обманные)',
+  'metric.msPerItem': 'мс/элемент',
+  'dashboard.takeBaseline': 'Пройти базовую оценку',
+  'dashboard.baselinePrompt': 'Установите базовый уровень для отслеживания прогресса',
+  'baseline.title': 'Базовая оценка',
+  'baseline.improvement': 'Улучшение от базового уровня',
 
   // Exercise select
   'exerciseSelect.title': 'Выбор упражнения',

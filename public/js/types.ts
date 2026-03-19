@@ -80,6 +80,16 @@ export interface ExerciseMetrics {
   // Visual Search specific
   searchTime?: number;
   itemsPerSecond?: number;
+  searchSlope?: number; // ms per additional item (linear regression)
+  // Flanker neutral trial metrics
+  rtNeutral?: number;
+  facilitationScore?: number; // rtNeutral - rtCongruent
+  inhibitionCost?: number; // rtIncongruent - rtNeutral
+  // N-Back lure trial metrics
+  lureTrials?: number;
+  lureFalseAlarms?: number;
+  // Cross-exercise clinical metrics
+  lapseRate?: number; // proportion of RTs > mean + 3*SD
 }
 
 export interface ExerciseResult {
@@ -173,6 +183,12 @@ export interface SessionResult {
   bonusEvent?: boolean; // random bonus event
 }
 
+export interface BaselineResult {
+  timestamp: number;
+  sessionNumber: number; // which session this baseline was taken at
+  exercises: ExerciseResult[];
+}
+
 export interface AppData {
   version: number;
   profile: UserProfile;
@@ -182,6 +198,7 @@ export interface AppData {
   history: SessionResult[];
   exerciseHistory: ExerciseResult[];
   onboardingComplete: boolean;
+  baseline?: BaselineResult;
 }
 
 // Typed events - discriminated union

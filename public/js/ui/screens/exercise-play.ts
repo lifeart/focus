@@ -15,6 +15,7 @@ import { calculateXP } from '../../core/progression.js';
 import { updateDifficulty } from '../../core/adaptive.js';
 import { createSessionPlan } from '../../core/session.js';
 import { t } from '../../core/i18n.js';
+import { getBaselineExercises, getBaselineParams, createBaselineResult } from '../../core/baseline.js';
 
 function createExercise(exerciseId: ExerciseId): Exercise | null {
   const data = appState.getData();
@@ -23,7 +24,7 @@ function createExercise(exerciseId: ExerciseId): Exercise | null {
   let params = getExerciseParams(exerciseId, level);
 
   if (diffState && isPlateauDetected(diffState)) {
-    params = getMicroAdjustment(params);
+    params = getMicroAdjustment(params, exerciseId);
   }
 
   const sound = getSoundManager();
@@ -542,13 +543,181 @@ function renderSessionMode(
   };
 }
 
+// ─── Baseline mode ──────────────────────────────────────────────────
+
+function createBaselineExercise(exerciseId: ExerciseId): Exercise | null {
+  const params = getBaselineParams(exerciseId);
+  const sound = getSoundManager();
+  const level = 1; // Always Level 1 for baseline
+
+  switch (exerciseId) {
+    case 'go-no-go':
+      return createGoNoGo(level, params, sound);
+    case 'n-back':
+      return createNBack(level, params, sound);
+    case 'flanker':
+      return createFlanker(level, params, sound);
+    default:
+      return null;
+  }
+}
+
+function renderBaselineMode(
+  container: HTMLElement,
+  disposables: ReturnType<typeof createDisposables>,
+): () => void {
+  const baselineExercises = getBaselineExercises();
+  const exerciseResults: ExerciseResult[] = [];
+  let currentIndex = -1;
+  let exercise: Exercise | null = null;
+  let isPaused = false;
+  let isFinished = false;
+
+  function runNextExercise(): void {
+    currentIndex++;
+    if (currentIndex >= baselineExercises.length) {
+      finishBaseline();
+      return;
+    }
+    runExercise(baselineExercises[currentIndex]);
+  }
+
+  function runExercise(exId: ExerciseId): void {
+    container.innerHTML = '';
+    const exerciseName = t(`exercise.${exId}.name` as any);
+    let exerciseFinished = false;
+
+    const header = el('div', { className: 'exercise-header' }, [
+      el('button', {
+        className: 'btn btn--ghost exercise-back-btn',
+        onClick: () => { isFinished = true; window.location.hash = '#/dashboard'; },
+      }, [t('play.exit')]),
+      el('h2', { className: 'exercise-title' }, [
+        `${t('baseline.title')} — ${exerciseName} (${currentIndex + 1}/${baselineExercises.length})`,
+      ]),
+      el('button', {
+        className: 'btn btn--ghost exercise-pause-btn',
+        onClick: togglePause,
+      }, [t('play.pause')]),
+    ]);
+
+    const exerciseArea = el('div', { className: 'exercise-area' });
+    const pauseOverlay = el('div', { className: 'pause-overlay hidden' }, [
+      el('div', { className: 'pause-content' }, [
+        el('h2', null, [t('play.pauseTitle')]),
+        el('button', { className: 'btn btn--primary', onClick: togglePause }, [t('play.continue')]),
+        el('button', { className: 'btn btn--ghost', onClick: () => { isFinished = true; window.location.hash = '#/dashboard'; } }, [t('play.finish')]),
+      ]),
+    ]);
+
+    container.appendChild(header);
+    container.appendChild(exerciseArea);
+    container.appendChild(pauseOverlay);
+
+    function togglePause(): void {
+      if (exerciseFinished || !exercise) return;
+      isPaused = !isPaused;
+      if (isPaused) {
+        exercise.pause();
+        pauseOverlay.classList.remove('hidden');
+      } else {
+        exercise.resume();
+        pauseOverlay.classList.add('hidden');
+      }
+    }
+
+    function onFinish(): void {
+      if (exerciseFinished || !exercise) return;
+      exerciseFinished = true;
+      const result = exercise.stop();
+      exercise.destroy();
+      exercise = null;
+      exerciseResults.push(result);
+
+      // Brief transition then next exercise
+      disposables.setTimeout(() => {
+        if (!isFinished) runNextExercise();
+      }, 1000);
+    }
+
+    async function start(): Promise<void> {
+      exercise = createBaselineExercise(exId);
+      if (!exercise) return;
+      exercise.setup(exerciseArea);
+      if (exId !== 'breathing' && exId !== 'pomodoro') {
+        await showCountdown(exerciseArea, disposables);
+      }
+      if (exerciseFinished || isFinished) return;
+      exercise.start();
+
+      // Baseline uses 60s fixed duration
+      const durationMs = 60_000;
+      let elapsed = 0;
+      const autoFinish = disposables.setInterval(() => {
+        if (exerciseFinished || isFinished) { clearInterval(autoFinish); return; }
+        if (!isPaused) elapsed += 500;
+        if (elapsed >= durationMs + 500 && !exerciseFinished && !isPaused) {
+          clearInterval(autoFinish);
+          onFinish();
+        }
+      }, 500);
+    }
+
+    start();
+  }
+
+  function finishBaseline(): void {
+    isFinished = true;
+    const data = appState.getData();
+    const baseline = createBaselineResult(exerciseResults, data.progression.totalSessionCount);
+
+    appState.updateData((d) => {
+      d.baseline = baseline;
+    });
+
+    window.location.hash = '#/dashboard';
+  }
+
+  // Show intro screen
+  const intro = el('div', { className: 'screen__stub' }, [
+    el('h1', { className: 'screen__title' }, [t('baseline.title')]),
+    el('p', null, [t('dashboard.baselinePrompt')]),
+    el('p', null, [
+      t('play.planInfo', { count: baselineExercises.length, minutes: baselineExercises.length }),
+    ]),
+    el('button', {
+      className: 'btn btn--primary btn--lg',
+      onClick: () => runNextExercise(),
+    }, [t('play.startBtn')]),
+    el('button', {
+      className: 'btn btn--ghost',
+      onClick: () => { window.location.hash = '#/dashboard'; },
+    }, [t('play.cancelBtn')]),
+  ]);
+  container.appendChild(intro);
+
+  return () => {
+    isFinished = true;
+    if (exercise) { exercise.destroy(); exercise = null; }
+  };
+}
+
 // ─── Main render ─────────────────────────────────────────────────────
 
 export const renderExercisePlay: ScreenRender = (container, params) => {
   addClass(container, 'screen');
   const disposables = createDisposables();
 
-  const exerciseId = params?.exerciseId as ExerciseId | undefined;
+  const exerciseId = params?.exerciseId as string | undefined;
+
+  // Baseline mode
+  if (exerciseId === 'baseline') {
+    const cleanupBaseline = renderBaselineMode(container, disposables);
+    return () => {
+      cleanupBaseline();
+      disposables.dispose();
+    };
+  }
 
   // Session mode: no exerciseId provided
   if (!exerciseId) {
@@ -560,7 +729,8 @@ export const renderExercisePlay: ScreenRender = (container, params) => {
   }
 
   // Single exercise mode
-  if (!EXERCISE_CONFIGS[exerciseId]) {
+  const exId = exerciseId as ExerciseId;
+  if (!EXERCISE_CONFIGS[exId]) {
     container.appendChild(el('div', { className: 'screen__stub' }, [
       el('h1', { className: 'screen__title' }, [t('play.notFound')]),
       el('p', null, [t('play.returnToList')]),
@@ -569,7 +739,7 @@ export const renderExercisePlay: ScreenRender = (container, params) => {
     return () => disposables.dispose();
   }
 
-  const cleanupExercise = renderSingleExercise(container, disposables, exerciseId);
+  const cleanupExercise = renderSingleExercise(container, disposables, exId);
 
   return () => {
     cleanupExercise();

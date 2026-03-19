@@ -232,6 +232,18 @@ export const de: TranslationTable = {
   'metric.completion': 'Abschluss',
   'metric.ms': 'ms',
   'metric.sec': 's',
+  'metric.lapseRate': 'Aufmerksamkeitsaussetzer',
+  'metric.searchSlope': 'Suchsteigung',
+  'metric.rtNeutral': 'RT neutral',
+  'metric.facilitation': 'Erleichterung',
+  'metric.inhibitionCost': 'Hemmungskosten',
+  'metric.lureTrials': 'Lockversuche',
+  'metric.lureFalseAlarms': 'Fehlalarme (Lock)',
+  'metric.msPerItem': 'ms/Element',
+  'dashboard.takeBaseline': 'Basisbewertung durchf\u00FChren',
+  'dashboard.baselinePrompt': 'Erstelle deine Basis, um Fortschritte zu verfolgen',
+  'baseline.title': 'Basisbewertung',
+  'baseline.improvement': 'Verbesserung zur Basis',
 
   // Exercise select
   'exerciseSelect.title': '\u00DCbung w\u00E4hlen',
