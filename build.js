@@ -36,6 +36,30 @@ function copyHTML() {
     fs.copyFileSync(faviconSrc, faviconDest);
     console.log("Copied favicon.svg to dist/");
   }
+
+  // Copy manifest.json
+  const manifestSrc = path.resolve(__dirname, "public", "manifest.json");
+  const manifestDest = path.resolve(distDir, "manifest.json");
+  if (fs.existsSync(manifestSrc)) {
+    fs.copyFileSync(manifestSrc, manifestDest);
+    console.log("Copied manifest.json to dist/");
+  }
+
+  // Copy service worker with cache-busting version
+  const swSrc = path.resolve(__dirname, "public", "sw.js");
+  const swDest = path.resolve(distDir, "sw.js");
+  if (fs.existsSync(swSrc)) {
+    let swContent = fs.readFileSync(swSrc, "utf-8");
+    swContent = swContent.replace("focus-v1", `focus-${Date.now()}`);
+    fs.writeFileSync(swDest, swContent);
+    console.log("Copied sw.js to dist/ (with cache-busting)");
+  }
+
+  // Generate PWA icons
+  const generateIconsPath = path.resolve(__dirname, "scripts", "generate-icons.js");
+  if (fs.existsSync(generateIconsPath)) {
+    require(generateIconsPath);
+  }
 }
 
 async function build() {
