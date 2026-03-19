@@ -1,16 +1,11 @@
 import { el } from '../renderer.js';
+import { t } from '../../core/i18n.js';
 import type { BadgeDefinition, BadgeTier } from '../../types.js';
 
 const TIER_COLORS: Record<BadgeTier, string> = {
   bronze: '#CD7F32',
   silver: '#C0C0C0',
   gold: '#FFD700',
-};
-
-const TIER_LABELS: Record<BadgeTier, string> = {
-  bronze: 'Бронза',
-  silver: 'Серебро',
-  gold: 'Золото',
 };
 
 export function renderBadgeCard(
@@ -35,21 +30,22 @@ export function renderBadgeCard(
   }
   card.appendChild(iconEl);
 
-  // Name
-  const nameEl = el('div', { className: 'badge-card__name' }, [badge.name]);
+  // Name - use i18n key
+  const nameText = t(`badge.${badge.id}.name` as any);
+  const nameEl = el('div', { className: 'badge-card__name' }, [nameText]);
   card.appendChild(nameEl);
 
   // Tier indicator
   if (!isLocked) {
-    const tierEl = el('div', { className: 'badge-card__tier' }, [TIER_LABELS[earned!]]);
+    const tierLabel = t(`badgeTier.${earned!}` as any);
+    const tierEl = el('div', { className: 'badge-card__tier' }, [tierLabel]);
     tierEl.style.color = TIER_COLORS[earned!];
     card.appendChild(tierEl);
   }
 
-  // Description / condition
-  const descEl = el('div', { className: 'badge-card__desc' }, [
-    badge.description[displayTier],
-  ]);
+  // Description / condition - use i18n key
+  const descText = t(`badge.${badge.id}.${displayTier}` as any);
+  const descEl = el('div', { className: 'badge-card__desc' }, [descText]);
   card.appendChild(descEl);
 
   container.appendChild(card);

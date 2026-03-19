@@ -2,6 +2,7 @@ import type { Exercise, ExerciseResult, ExerciseMetrics, DifficultyParams, Sound
 import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
 import { createExerciseTimer, showFeedback, formatTime } from './helpers.js';
+import { t } from '../core/i18n.js';
 
 const DURATION_MS = 180_000; // 3 minutes
 const TRIAL_TIMEOUT_MS = 10_000; // 10 seconds per trial
@@ -228,7 +229,7 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
 
   function updateTrialCounter(): void {
     if (trialCounter) {
-      trialCounter.textContent = `Проба ${trialIndex} из ~${estimatedTrials}`;
+      trialCounter.textContent = t('trial.counter', { current: trialIndex, total: estimatedTrials });
     }
   }
 
@@ -275,7 +276,7 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
       timerDisplay.textContent = formatTime(DURATION_MS);
 
       trialCounter = el('div', { className: 'exercise-trial-counter' });
-      trialCounter.textContent = `Проба 0 из ~${estimatedTrials}`;
+      trialCounter.textContent = t('trial.counter', { current: 0, total: estimatedTrials });
 
       const header = el('div', { className: 'exercise-header' }, [timerDisplay, trialCounter]);
 
@@ -290,7 +291,7 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
       gridContainer.style.padding = '1rem';
 
       noTargetBtn = el('button', { className: 'visual-search-no-target-btn' });
-      noTargetBtn.textContent = 'Нет цели';
+      noTargetBtn.textContent = t('visualSearch.noTarget');
       noTargetBtn.style.display = 'block';
       noTargetBtn.style.margin = '1rem auto';
       noTargetBtn.style.padding = '0.75rem 2rem';

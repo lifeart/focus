@@ -14,6 +14,7 @@ import { EXERCISE_CONFIGS, SESSION_RESULT_KEY, SESSION_BONUS_KEY } from '../../c
 import { calculateXP } from '../../core/progression.js';
 import { updateDifficulty } from '../../core/adaptive.js';
 import { createSessionPlan } from '../../core/session.js';
+import { t } from '../../core/i18n.js';
 
 function createExercise(exerciseId: ExerciseId): Exercise | null {
   const data = appState.getData();
@@ -58,32 +59,34 @@ function renderSingleExercise(
   let isPaused = false;
   let isFinished = false;
 
+  const exerciseName = t(`exercise.${exId}.name` as any);
+
   // Build UI
   const header = el('div', { className: 'exercise-header' }, [
     el('button', {
       className: 'btn btn--ghost exercise-back-btn',
       onClick: () => finishExercise(true),
-    }, ['\u2190 \u0412\u044B\u0445\u043E\u0434']),
-    el('h2', { className: 'exercise-title' }, [config.name]),
+    }, [t('play.exit')]),
+    el('h2', { className: 'exercise-title' }, [exerciseName]),
     el('button', {
       className: 'btn btn--ghost exercise-pause-btn',
       id: 'pause-btn',
       onClick: togglePause,
-    }, ['\u23F8 \u041F\u0430\u0443\u0437\u0430']),
+    }, [t('play.pause')]),
   ]);
 
   const exerciseArea = el('div', { className: 'exercise-area' });
   const pauseOverlay = el('div', { className: 'pause-overlay hidden' }, [
     el('div', { className: 'pause-content' }, [
-      el('h2', null, ['\u041F\u0430\u0443\u0437\u0430']),
+      el('h2', null, [t('play.pauseTitle')]),
       el('button', {
         className: 'btn btn--primary',
         onClick: togglePause,
-      }, ['\u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C']),
+      }, [t('play.continue')]),
       el('button', {
         className: 'btn btn--ghost',
         onClick: () => finishExercise(true),
-      }, ['\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044C']),
+      }, [t('play.finish')]),
     ]),
   ]);
 
@@ -247,27 +250,28 @@ function renderSessionMode(
     for (let i = 0; i < plan.exercises.length; i++) {
       const exId = plan.exercises[i];
       const config = EXERCISE_CONFIGS[exId];
+      const exerciseName = t(`exercise.${exId}.name` as any);
       planList.appendChild(el('div', { className: 'session-plan-item' }, [
         el('span', { className: 'session-plan-item__num' }, [`${i + 1}.`]),
         el('span', { className: 'session-plan-item__icon' }, [config.icon]),
-        el('span', { className: 'session-plan-item__name' }, [config.name]),
+        el('span', { className: 'session-plan-item__name' }, [exerciseName]),
       ]));
     }
 
     const planScreen = el('div', { className: 'screen__stub' }, [
-      el('h1', { className: 'screen__title' }, ['\u041F\u043B\u0430\u043D \u0442\u0440\u0435\u043D\u0438\u0440\u043E\u0432\u043A\u0438']),
+      el('h1', { className: 'screen__title' }, [t('play.sessionPlan')]),
       el('p', null, [
-        `${plan.exercises.length} \u0443\u043F\u0440\u0430\u0436\u043D\u0435\u043D\u0438\u0439 \u2022 ~${plan.estimatedMinutes} \u043C\u0438\u043D`,
+        t('play.planInfo', { count: plan.exercises.length, minutes: plan.estimatedMinutes }),
       ]),
       planList,
       el('button', {
         className: 'btn btn--primary btn--lg',
         onClick: () => startNextExercise(),
-      }, ['\u041D\u0430\u0447\u0430\u0442\u044C']),
+      }, [t('play.startBtn')]),
       el('button', {
         className: 'btn btn--ghost',
         onClick: () => { window.location.hash = '#/dashboard'; },
-      }, ['\u041E\u0442\u043C\u0435\u043D\u0430']),
+      }, [t('play.cancelBtn')]),
     ]);
 
     container.appendChild(planScreen);
@@ -277,16 +281,17 @@ function renderSessionMode(
 
   function showTransition(nextExId: ExerciseId): void {
     clear(container);
-    const config = EXERCISE_CONFIGS[nextExId];
+    const exerciseName = t(`exercise.${nextExId}.name` as any);
+    const exerciseDesc = t(`exercise.${nextExId}.description` as any);
 
     const transitionScreen = el('div', { className: 'screen__stub' }, [
       el('p', { className: 'session-transition__label' }, [
-        `\u0423\u043F\u0440\u0430\u0436\u043D\u0435\u043D\u0438\u0435 ${currentExerciseIndex + 1} \u0438\u0437 ${plan.exercises.length}`,
+        t('play.exerciseOf', { current: currentExerciseIndex + 1, total: plan.exercises.length }),
       ]),
       el('h1', { className: 'screen__title' }, [
-        `\u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0435\u0435: ${config.name}`,
+        t('play.nextExercise', { name: exerciseName }),
       ]),
-      el('p', null, [config.description]),
+      el('p', null, [exerciseDesc]),
     ]);
 
     container.appendChild(transitionScreen);
@@ -304,35 +309,35 @@ function renderSessionMode(
     clear(container);
     addClass(container, 'screen');
 
-    const config = EXERCISE_CONFIGS[exId];
+    const exerciseName = t(`exercise.${exId}.name` as any);
     let exerciseFinished = false;
 
     const header = el('div', { className: 'exercise-header' }, [
       el('button', {
         className: 'btn btn--ghost exercise-back-btn',
         onClick: () => onExerciseFinish(true),
-      }, ['\u2190 \u0412\u044B\u0445\u043E\u0434']),
+      }, [t('play.exit')]),
       el('h2', { className: 'exercise-title' }, [
-        `${config.name} (${currentExerciseIndex + 1}/${plan.exercises.length})`,
+        `${exerciseName} (${currentExerciseIndex + 1}/${plan.exercises.length})`,
       ]),
       el('button', {
         className: 'btn btn--ghost exercise-pause-btn',
         onClick: toggleExercisePause,
-      }, ['\u23F8 \u041F\u0430\u0443\u0437\u0430']),
+      }, [t('play.pause')]),
     ]);
 
     const exerciseArea = el('div', { className: 'exercise-area' });
     const pauseOverlay = el('div', { className: 'pause-overlay hidden' }, [
       el('div', { className: 'pause-content' }, [
-        el('h2', null, ['\u041F\u0430\u0443\u0437\u0430']),
+        el('h2', null, [t('play.pauseTitle')]),
         el('button', {
           className: 'btn btn--primary',
           onClick: toggleExercisePause,
-        }, ['\u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C']),
+        }, [t('play.continue')]),
         el('button', {
           className: 'btn btn--ghost',
           onClick: () => onExerciseFinish(true),
-        }, ['\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044C \u0441\u0435\u0441\u0441\u0438\u044E']),
+        }, [t('play.finishSession')]),
       ]),
     ]);
 
@@ -557,9 +562,9 @@ export const renderExercisePlay: ScreenRender = (container, params) => {
   // Single exercise mode
   if (!EXERCISE_CONFIGS[exerciseId]) {
     container.appendChild(el('div', { className: 'screen__stub' }, [
-      el('h1', { className: 'screen__title' }, ['\u0423\u043F\u0440\u0430\u0436\u043D\u0435\u043D\u0438\u0435 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E']),
-      el('p', null, ['\u0412\u0435\u0440\u043D\u0438\u0442\u0435\u0441\u044C \u043A \u0441\u043F\u0438\u0441\u043A\u0443 \u0443\u043F\u0440\u0430\u0436\u043D\u0435\u043D\u0438\u0439']),
-      el('button', { className: 'btn btn--primary', onClick: () => { window.location.hash = '#/exercises'; } }, ['\u041A \u0443\u043F\u0440\u0430\u0436\u043D\u0435\u043D\u0438\u044F\u043C']),
+      el('h1', { className: 'screen__title' }, [t('play.notFound')]),
+      el('p', null, [t('play.returnToList')]),
+      el('button', { className: 'btn btn--primary', onClick: () => { window.location.hash = '#/exercises'; } }, [t('play.toExercises')]),
     ]));
     return () => disposables.dispose();
   }

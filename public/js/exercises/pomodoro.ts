@@ -2,7 +2,7 @@ import type { Exercise, ExerciseResult, ExerciseMetrics, DifficultyParams, Sound
 import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
 import { formatTime } from './helpers.js';
-import { POMODORO_QUOTES } from '../constants.js';
+import { t } from '../core/i18n.js';
 
 type PomodoroState = 'focus' | 'break' | 'done';
 
@@ -27,7 +27,8 @@ function sendNotification(body: string): void {
 }
 
 function randomQuote(): string {
-  return POMODORO_QUOTES[Math.floor(Math.random() * POMODORO_QUOTES.length)];
+  const quoteIndex = Math.floor(Math.random() * 13);
+  return t(`quote.${quoteIndex}` as any);
 }
 
 function createProgressRing(): { svg: SVGSVGElement; circle: SVGCircleElement } {
@@ -144,10 +145,10 @@ export function createPomodoro(
     if (state === 'focus') {
       focusElapsedMs = focusDurationMs;
       sound.playEnd();
-      sendNotification('Время отдыхать! Отличная работа!');
+      sendNotification(t('pomodoro.notification.break'));
       transitionToBreak();
     } else if (state === 'break') {
-      sendNotification('Перерыв окончен!');
+      sendNotification(t('pomodoro.notification.breakOver'));
       transitionToDone();
     }
   }
@@ -158,7 +159,7 @@ export function createPomodoro(
     totalPausedMs = 0;
 
     if (stateLabel) {
-      stateLabel.textContent = 'Перерыв';
+      stateLabel.textContent = t('pomodoro.break');
     }
 
     if (progressCircle) {
@@ -181,7 +182,7 @@ export function createPomodoro(
     stopTicking();
 
     if (stateLabel) {
-      stateLabel.textContent = 'Готово!';
+      stateLabel.textContent = t('pomodoro.done');
     }
 
     if (timerText) {
@@ -228,7 +229,7 @@ export function createPomodoro(
     }
 
     if (stateLabel) {
-      stateLabel.textContent = 'Фокус';
+      stateLabel.textContent = t('pomodoro.focus');
     }
 
     if (progressCircle) {
@@ -242,7 +243,7 @@ export function createPomodoro(
     }
 
     if (startPauseBtn) {
-      startPauseBtn.textContent = 'Старт';
+      startPauseBtn.textContent = t('pomodoro.focus');
       startPauseBtn.style.display = '';
     }
   }
@@ -262,11 +263,11 @@ export function createPomodoro(
   function updateButtonLabel(): void {
     if (!startPauseBtn) return;
     if (!started) {
-      startPauseBtn.textContent = 'Старт';
+      startPauseBtn.textContent = t('pomodoro.focus');
     } else if (paused) {
-      startPauseBtn.textContent = 'Продолжить';
+      startPauseBtn.textContent = t('pomodoro.continueBtn');
     } else {
-      startPauseBtn.textContent = 'Пауза';
+      startPauseBtn.textContent = t('pomodoro.pauseBtn');
     }
   }
 
@@ -279,7 +280,7 @@ export function createPomodoro(
 
       // State label
       stateLabel = el('div', { className: 'exercise-timer' });
-      stateLabel.textContent = 'Фокус';
+      stateLabel.textContent = t('pomodoro.focus');
       stateLabel.style.textAlign = 'center';
       stateLabel.style.fontSize = '1.2rem';
       stateLabel.style.fontWeight = '600';
@@ -326,11 +327,11 @@ export function createPomodoro(
 
       // Controls
       startPauseBtn = el('button', { className: 'btn btn--primary' });
-      startPauseBtn.textContent = 'Старт';
+      startPauseBtn.textContent = t('pomodoro.focus');
       disposables.addListener(startPauseBtn, 'click', toggleStartPause);
 
       resetBtn = el('button', { className: 'btn btn--secondary' });
-      resetBtn.textContent = 'Сброс';
+      resetBtn.textContent = t('pomodoro.resetBtn');
       disposables.addListener(resetBtn, 'click', resetExercise);
 
       const controls = el('div', { className: 'pomodoro-controls' });

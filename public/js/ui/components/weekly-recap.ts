@@ -1,7 +1,9 @@
 import type { AppData } from '../../types.js';
 import { el } from '../renderer.js';
+import { t } from '../../core/i18n.js';
 import { getLevel, getLevelTitle } from '../../core/progression.js';
 import { createDisposables } from '../../core/disposables.js';
+import type { TranslationKey } from '../../i18n/keys.js';
 
 function getWeekRange(): { start: Date; end: Date; label: string } {
   const today = new Date();
@@ -65,6 +67,10 @@ function getWeeklyStats(data: AppData, start: Date, end: Date) {
   };
 }
 
+const DAY_KEYS: TranslationKey[] = [
+  'day.mon', 'day.tue', 'day.wed', 'day.thu', 'day.fri', 'day.sat', 'day.sun',
+];
+
 function drawRecapCanvas(
   canvas: HTMLCanvasElement,
   data: AppData,
@@ -111,10 +117,10 @@ function drawRecapCanvas(
 
   // Stats
   const statsData = [
-    { label: '\u0414\u043D\u0435\u0439 \u0442\u0440\u0435\u043D\u0438\u0440\u043E\u0432\u043E\u043A', value: String(stats.daysTrained) },
-    { label: '\u0421\u0435\u0441\u0441\u0438\u0439', value: String(stats.totalSessions) },
-    { label: '\u041B\u0443\u0447\u0448\u0438\u0439 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442', value: `${stats.bestScore}%` },
-    { label: 'XP \u0437\u0430 \u043D\u0435\u0434\u0435\u043B\u044E', value: `+${stats.totalXP}` },
+    { label: t('recap.daysTrained'), value: String(stats.daysTrained) },
+    { label: t('recap.sessions'), value: String(stats.totalSessions) },
+    { label: t('recap.bestResult'), value: `${stats.bestScore}%` },
+    { label: t('recap.weeklyXP'), value: `+${stats.totalXP}` },
   ];
 
   let y = 115;
@@ -137,10 +143,10 @@ function drawRecapCanvas(
   ctx.font = 'bold 14px Inter, sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
-  ctx.fillText('\u0410\u043A\u0442\u0438\u0432\u043D\u043E\u0441\u0442\u044C \u043F\u043E \u0434\u043D\u044F\u043C', w / 2, y);
+  ctx.fillText(t('stats.activity'), w / 2, y);
 
   y += 15;
-  const dayLabels = ['\u041F\u043D', '\u0412\u0442', '\u0421\u0440', '\u0427\u0442', '\u041F\u0442', '\u0421\u0431', '\u0412\u0441'];
+  const dayLabels = DAY_KEYS.map(k => t(k));
   const barMaxHeight = 80;
   const barWidth = 30;
   const barGap = 12;
@@ -172,7 +178,7 @@ function drawRecapCanvas(
   ctx.font = 'bold 16px Inter, sans-serif';
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
-  ctx.fillText(`\u0423\u0440\u043E\u0432\u0435\u043D\u044C ${level} \u2014 ${levelTitle}`, w / 2, levelY);
+  ctx.fillText(t('results.levelLabel', { level, title: levelTitle }), w / 2, levelY);
 
   // Footer branding
   ctx.font = '11px Inter, sans-serif';
@@ -189,7 +195,7 @@ export function renderWeeklyRecap(container: HTMLElement, data: AppData): (() =>
   const levelTitle = getLevelTitle(level);
 
   const section = el('div', { className: 'card weekly-recap' }, [
-    el('h2', { className: 'card__title' }, ['\u041D\u0435\u0434\u0435\u043B\u044C\u043D\u044B\u0439 \u043E\u0442\u0447\u0451\u0442']),
+    el('h2', { className: 'card__title' }, [t('recap.title')]),
   ]);
 
   const canvas = document.createElement('canvas');
@@ -206,7 +212,7 @@ export function renderWeeklyRecap(container: HTMLElement, data: AppData): (() =>
   });
 
   const downloadBtn = el('button', { className: 'btn btn--primary' }, [
-    '\u0421\u043A\u0430\u0447\u0430\u0442\u044C \u043A\u0430\u0440\u0442\u0438\u043D\u043A\u0443',
+    t('recap.download'),
   ]);
   disposables.addListener(downloadBtn, 'click', () => {
     const link = document.createElement('a');
@@ -216,7 +222,7 @@ export function renderWeeklyRecap(container: HTMLElement, data: AppData): (() =>
   });
 
   const copyBtn = el('button', { className: 'btn btn--secondary' }, [
-    '\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C',
+    t('recap.copy'),
   ]);
   disposables.addListener(copyBtn, 'click', () => {
     canvas.toBlob((blob) => {
@@ -225,9 +231,9 @@ export function renderWeeklyRecap(container: HTMLElement, data: AppData): (() =>
         navigator.clipboard.write([
           new ClipboardItem({ 'image/png': blob }),
         ]).then(() => {
-          copyBtn.textContent = '\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E!';
+          copyBtn.textContent = t('recap.copied');
           setTimeout(() => {
-            copyBtn.textContent = '\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C';
+            copyBtn.textContent = t('recap.copy');
           }, 2000);
         });
       } catch {

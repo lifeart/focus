@@ -10,6 +10,7 @@ import type {
   BreathingPattern,
   WeeklyChallenge,
   BadgeTier,
+  Locale,
 } from './types.js';
 
 // ─── Storage key & version ───────────────────────────────────────────
@@ -302,6 +303,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   breathingPattern: '4-4-4',
   pomodoroMinutes: 25,
   showStreak: true,
+  locale: 'en' as Locale,
 };
 
 // ─── Default app data factory ────────────────────────────────────────

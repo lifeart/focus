@@ -1,4 +1,6 @@
 import { el } from '../renderer.js';
+import { t, tPlural } from '../../core/i18n.js';
+import type { TranslationKey } from '../../i18n/keys.js';
 
 export interface StreakDisplayOptions {
   /** Array of 7 booleans, one per day (Mon-Sun), true = active */
@@ -9,7 +11,9 @@ export interface StreakDisplayOptions {
   longestStreak: number;
 }
 
-const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+const DAY_KEYS: TranslationKey[] = [
+  'day.mon', 'day.tue', 'day.wed', 'day.thu', 'day.fri', 'day.sat', 'day.sun',
+];
 
 export function renderStreakDisplay(
   container: HTMLElement,
@@ -29,7 +33,7 @@ export function renderStreakDisplay(
       className: 'streak-display__dot' + (weekDays[i] ? ' streak-display__dot--active' : ''),
     });
 
-    const label = el('span', { className: 'streak-display__day-label' }, [DAY_LABELS[i]]);
+    const label = el('span', { className: 'streak-display__day-label' }, [t(DAY_KEYS[i])]);
 
     dayWrapper.appendChild(dot);
     dayWrapper.appendChild(label);
@@ -39,14 +43,15 @@ export function renderStreakDisplay(
 
   // Progress text - positive framing
   const progressText = el('div', { className: 'streak-display__progress' }, [
-    `${activeDays} из ${weeklyGoal} дней`,
+    t('streak.daysOf', { done: activeDays, goal: weeklyGoal }),
   ]);
   wrapper.appendChild(progressText);
 
   // Longest streak
   if (longestStreak > 0) {
+    const unit = tPlural('plural.day', longestStreak);
     const streakText = el('div', { className: 'streak-display__longest' }, [
-      `Лучшая серия: ${longestStreak} ${getDayWord(longestStreak)}`,
+      t('streak.bestStreak', { n: longestStreak, unit }),
     ]);
     wrapper.appendChild(streakText);
   }
@@ -56,13 +61,4 @@ export function renderStreakDisplay(
   return () => {
     wrapper.remove();
   };
-}
-
-function getDayWord(n: number): string {
-  const abs = Math.abs(n) % 100;
-  const last = abs % 10;
-  if (abs >= 11 && abs <= 19) return 'дней';
-  if (last === 1) return 'день';
-  if (last >= 2 && last <= 4) return 'дня';
-  return 'дней';
 }

@@ -3,6 +3,7 @@ import { el, addClass, clear } from '../renderer.js';
 import { appState } from '../../main.js';
 import { createDisposables } from '../../core/disposables.js';
 import { calculateXP } from '../../core/progression.js';
+import { t } from '../../core/i18n.js';
 
 // ─── Constants ───────────────────────────────────────────────────────
 
@@ -12,9 +13,9 @@ const AVATAR_COLORS = [
 ];
 
 const DAILY_GOAL_OPTIONS = [
-  { minutes: 5, label: '5 мин', subtitle: 'Легко начать' },
-  { minutes: 10, label: '10 мин', subtitle: 'Оптимально' },
-  { minutes: 15, label: '15 мин', subtitle: 'Для продвинутых' },
+  { minutes: 5, label: '5 мин', subtitleKey: 'onboarding.goal.easy' as const },
+  { minutes: 10, label: '10 мин', subtitleKey: 'onboarding.goal.optimal' as const },
+  { minutes: 15, label: '15 мин', subtitleKey: 'onboarding.goal.advanced' as const },
 ];
 
 const TOTAL_TRIALS = 10;
@@ -272,11 +273,11 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
   function buildWelcome(): HTMLElement {
     const step = el('div', { className: 'onboarding__step' }, [
       el('h1', { className: 'onboarding__title onboarding__title--large' }, ['Focus']),
-      el('p', { className: 'onboarding__subtitle' }, ['\u0422\u0440\u0435\u043D\u0438\u0440\u0443\u0439 \u0444\u043E\u043A\u0443\u0441. \u041F\u0440\u043E\u043A\u0430\u0447\u0430\u0439 \u043C\u043E\u0437\u0433.']),
+      el('p', { className: 'onboarding__subtitle' }, [t('onboarding.subtitle')]),
       el('button', {
         className: 'btn btn--primary btn--lg',
         onClick: () => transitionStep(wrapper, buildExerciseIntro, disposables),
-      }, ['Начнём!']),
+      }, [t('onboarding.letsGo')]),
     ]);
     return step;
   }
@@ -285,17 +286,17 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
 
   function buildExerciseIntro(): HTMLElement {
     const step = el('div', { className: 'onboarding__step' }, [
-      el('h2', { className: 'onboarding__title' }, ['Мини-тест']),
+      el('h2', { className: 'onboarding__title' }, [t('onboarding.miniTest')]),
       el('p', { className: 'onboarding__instruction' }, [
-        'Нажимайте на круги, игнорируйте квадраты',
+        t('onboarding.tapCircles'),
       ]),
       el('p', { className: 'onboarding__instruction' }, [
-        'Нажмите Пробел, кликните или тапните для ответа',
+        t('onboarding.pressSpace'),
       ]),
       el('button', {
         className: 'btn btn--primary btn--lg',
         onClick: () => transitionStep(wrapper, buildExercise, disposables),
-      }, ['Начать']),
+      }, [t('onboarding.start')]),
     ]);
     return step;
   }
@@ -314,7 +315,7 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
     const stimArea = el('div', { className: 'onboarding__stimulus-area' });
 
     const step = el('div', { className: 'onboarding__step' }, [
-      el('h2', { className: 'onboarding__title' }, ['Мини-тест']),
+      el('h2', { className: 'onboarding__title' }, [t('onboarding.miniTest')]),
       counterEl,
       stimArea,
       feedbackEl,
@@ -330,10 +331,10 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
       const isGo = trials[trialIndex];
       if (isGo) {
         correct++;
-        feedbackEl.textContent = 'Верно!';
+        feedbackEl.textContent = t('onboarding.correct');
         feedbackEl.className = 'onboarding__feedback onboarding__feedback--correct';
       } else {
-        feedbackEl.textContent = 'Не нужно!';
+        feedbackEl.textContent = t('onboarding.shouldntPress');
         feedbackEl.className = 'onboarding__feedback onboarding__feedback--incorrect';
       }
     }
@@ -362,12 +363,12 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
 
         // Check omission for go trials
         if (!responded && isGo) {
-          feedbackEl.textContent = 'Пропуск!';
+          feedbackEl.textContent = t('onboarding.missed');
           feedbackEl.className = 'onboarding__feedback onboarding__feedback--incorrect';
         } else if (!responded && !isGo) {
           // Correctly withheld
           correct++;
-          feedbackEl.textContent = 'Верно!';
+          feedbackEl.textContent = t('onboarding.correct');
           feedbackEl.className = 'onboarding__feedback onboarding__feedback--correct';
         }
 
@@ -414,22 +415,22 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
 
   function buildResult(): HTMLElement {
     const encouragement = miniExerciseScore >= 80
-      ? 'Круто! Отличное начало!'
+      ? t('onboarding.encourage.high')
       : miniExerciseScore >= 50
-        ? 'Хороший старт!'
-        : 'Неплохо! Будет только лучше!';
+        ? t('onboarding.encourage.mid')
+        : t('onboarding.encourage.low');
 
     const step = el('div', { className: 'onboarding__step' }, [
-      el('h2', { className: 'onboarding__title' }, ['Результат']),
+      el('h2', { className: 'onboarding__title' }, [t('onboarding.result')]),
       el('div', { className: 'onboarding__score' }, [`${miniExerciseScore}%`]),
       el('p', { className: 'onboarding__subtitle' }, [
-        `${miniExerciseCorrect} из ${miniExerciseTotal} правильно`,
+        t('onboarding.correctCount', { correct: miniExerciseCorrect, total: miniExerciseTotal }),
       ]),
       el('p', { className: 'onboarding__subtitle' }, [encouragement]),
       el('button', {
         className: 'btn btn--primary btn--lg',
         onClick: () => transitionStep(wrapper, buildProfileName, disposables),
-      }, ['Далее']),
+      }, [t('onboarding.next')]),
     ]);
     return step;
   }
@@ -440,19 +441,19 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
     const input = el('input', {
       className: 'onboarding__input',
       type: 'text',
-      placeholder: 'Введи имя',
+      placeholder: t('onboarding.namePlaceholder'),
     }) as HTMLInputElement;
 
     const step = el('div', { className: 'onboarding__step' }, [
-      el('h2', { className: 'onboarding__title' }, ['Как тебя зовут?']),
+      el('h2', { className: 'onboarding__title' }, [t('onboarding.whatsYourName')]),
       input,
       el('button', {
         className: 'btn btn--primary btn--lg',
         onClick: () => {
-          userName = input.value.trim() || 'Друг';
+          userName = input.value.trim() || t('dashboard.defaultName');
           transitionStep(wrapper, buildAvatarColor, disposables);
         },
-      }, ['Далее']),
+      }, [t('onboarding.next')]),
     ]);
 
     disposables.setTimeout(() => input.focus(), 350);
@@ -467,7 +468,7 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
 
     const preview = el('div', { className: 'onboarding__avatar-preview' });
     preview.style.backgroundColor = selectedColor;
-    preview.textContent = (userName || 'Друг')[0].toUpperCase();
+    preview.textContent = (userName || t('dashboard.defaultName'))[0].toUpperCase();
 
     const colorBtns: HTMLButtonElement[] = [];
 
@@ -500,7 +501,7 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
     });
 
     const step = el('div', { className: 'onboarding__step' }, [
-      el('h2', { className: 'onboarding__title' }, ['Выбери цвет аватара']),
+      el('h2', { className: 'onboarding__title' }, [t('onboarding.chooseColor')]),
       preview,
       colorsContainer,
       el('button', {
@@ -509,7 +510,7 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
           avatarColor = selectedColor;
           transitionStep(wrapper, buildDailyGoal, disposables);
         },
-      }, ['Далее']),
+      }, [t('onboarding.next')]),
     ]);
     return step;
   }
@@ -535,7 +536,7 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
     DAILY_GOAL_OPTIONS.forEach((opt) => {
       const card = el('div', { className: 'onboarding__goal-card' }, [
         el('div', { className: 'onboarding__goal-value' }, [opt.label]),
-        el('div', { className: 'onboarding__goal-subtitle' }, [opt.subtitle]),
+        el('div', { className: 'onboarding__goal-subtitle' }, [t(opt.subtitleKey)]),
       ]);
       if (opt.minutes === selectedGoal) {
         addClass(card, 'onboarding__goal-card--selected');
@@ -549,7 +550,7 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
     });
 
     const step = el('div', { className: 'onboarding__step' }, [
-      el('h2', { className: 'onboarding__title' }, ['Сколько минут в день?']),
+      el('h2', { className: 'onboarding__title' }, [t('onboarding.howManyMinutes')]),
       goalsContainer,
       el('button', {
         className: 'btn btn--primary btn--lg',
@@ -557,7 +558,7 @@ export const renderOnboarding: ScreenRender = (container, _params) => {
           dailyGoal = selectedGoal;
           finishOnboarding();
         },
-      }, ['Начать!']),
+      }, [t('onboarding.startBtn')]),
     ]);
     return step;
   }

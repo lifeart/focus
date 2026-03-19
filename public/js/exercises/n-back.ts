@@ -2,6 +2,7 @@ import type { Exercise, ExerciseResult, ExerciseMetrics, DifficultyParams, Sound
 import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
 import { createExerciseTimer, formatTime, calculateDPrime } from './helpers.js';
+import { t } from '../core/i18n.js';
 
 const DURATION_MS = 300_000; // 5 minutes
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
@@ -70,7 +71,7 @@ export function createNBack(level: number, params: DifficultyParams, sound: Soun
 
   function updateTrialCounter(): void {
     if (trialCounter) {
-      trialCounter.textContent = `Проба ${currentIndex + 1} из ~${estimatedTrials}`;
+      trialCounter.textContent = t('trial.counter', { current: currentIndex + 1, total: estimatedTrials });
     }
   }
 
@@ -254,7 +255,7 @@ export function createNBack(level: number, params: DifficultyParams, sound: Soun
       levelLabel.textContent = `${nLevel}-Back`;
 
       trialCounter = el('div', { className: 'exercise-trial-counter' });
-      trialCounter.textContent = `Проба 0 из ~${estimatedTrials}`;
+      trialCounter.textContent = t('trial.counter', { current: 0, total: estimatedTrials });
 
       const header = el('div', { className: 'exercise-header' }, [timerDisplay, levelLabel, trialCounter]);
 
@@ -279,7 +280,7 @@ export function createNBack(level: number, params: DifficultyParams, sound: Soun
 
       // Match button
       matchButton = el('button', { className: 'nback-match-btn' });
-      matchButton.textContent = 'Совпадение';
+      matchButton.textContent = t('nback.matchBtn');
 
       const controls = el('div', { className: 'nback-controls' }, [matchButton]);
 

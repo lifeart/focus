@@ -1,3 +1,6 @@
+// Locale type
+export type Locale = 'ru' | 'en' | 'de' | 'fr' | 'es';
+
 // Exercise IDs as union type
 export type ExerciseId = 'go-no-go' | 'n-back' | 'flanker' | 'visual-search' | 'breathing' | 'pomodoro';
 
@@ -111,6 +114,7 @@ export interface AppSettings {
   breathingPattern: BreathingPattern;
   pomodoroMinutes: number; // 15, 20, or 25
   showStreak: boolean;
+  locale: Locale;
 }
 
 export interface ProgressionData {

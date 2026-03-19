@@ -28,6 +28,14 @@ function copyHTML() {
   } else {
     console.warn("Warning: public/index.html not found, skipping copy.");
   }
+
+  // Copy favicon
+  const faviconSrc = path.resolve(__dirname, "public", "favicon.svg");
+  const faviconDest = path.resolve(distDir, "favicon.svg");
+  if (fs.existsSync(faviconSrc)) {
+    fs.copyFileSync(faviconSrc, faviconDest);
+    console.log("Copied favicon.svg to dist/");
+  }
 }
 
 async function build() {

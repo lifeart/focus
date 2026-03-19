@@ -1,5 +1,6 @@
 import type { Disposables } from '../types.js';
 import { el } from '../ui/renderer.js';
+import { t } from '../core/i18n.js';
 
 // Drift-corrected exercise timer
 export interface ExerciseTimer {
@@ -93,7 +94,7 @@ export function showCountdown(container: HTMLElement, disposables: Disposables):
         void number.offsetWidth;
         number.classList.add('countdown-animate');
       } else {
-        number.textContent = 'Начали!';
+        number.textContent = t('countdown.go');
         number.classList.remove('countdown-animate');
         void number.offsetWidth;
         number.classList.add('countdown-animate');

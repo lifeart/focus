@@ -3,6 +3,7 @@ import { createAppState } from './core/state.js';
 import { createSoundManager } from './core/sound.js';
 import { createRouter } from './router.js';
 import { renderNav, updateNavActive } from './ui/components/nav.js';
+import { initI18n, detectLocale } from './core/i18n.js';
 
 // Screens
 import { renderDashboard } from './ui/screens/dashboard.js';
@@ -57,6 +58,20 @@ router.register('/onboarding', renderOnboarding);
 function init(): void {
   appState.init();
 
+  // Initialize i18n
+  const data = appState.getData();
+
+  // If first launch (not onboarded), detect browser locale
+  if (!data.onboardingComplete && !data.settings.locale) {
+    const detectedLocale = detectLocale();
+    appState.updateData((d) => {
+      d.settings.locale = detectedLocale;
+    });
+    initI18n(detectedLocale);
+  } else {
+    initI18n(data.settings.locale || 'ru');
+  }
+
   const appEl = document.getElementById('app');
   if (!appEl) {
     console.error('[main] #app element not found');
@@ -97,11 +112,11 @@ function init(): void {
   document.addEventListener('keydown', initAudio);
 
   // Determine initial route
-  const data = appState.getData();
+  const currentData = appState.getData();
   const hasHash = window.location.hash && window.location.hash !== '#';
 
   if (!hasHash) {
-    if (!data.onboardingComplete) {
+    if (!currentData.onboardingComplete) {
       router.navigate('/onboarding');
     } else {
       router.navigate('/dashboard');

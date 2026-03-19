@@ -2,6 +2,7 @@ import type { Exercise, ExerciseResult, ExerciseMetrics, DifficultyParams, Sound
 import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
 import { createExerciseTimer, jitteredInterval, showFeedback, formatTime, calculateCV } from './helpers.js';
+import { t } from '../core/i18n.js';
 
 const DURATION_MS = 180_000; // 3 minutes
 const GO_COLORS = ['#4ecdc4', '#45b7d1', '#96ceb4', '#ffd93d'];
@@ -73,7 +74,7 @@ export function createGoNoGo(level: number, params: DifficultyParams, sound: Sou
 
   function updateTrialCounter(): void {
     if (trialCounter) {
-      trialCounter.textContent = `\u041f\u0440\u043e\u0431\u0430 ${trialIndex} \u0438\u0437 ~${estimatedTrials}`;
+      trialCounter.textContent = t('trial.counter', { current: trialIndex, total: estimatedTrials });
     }
   }
 
@@ -247,7 +248,7 @@ export function createGoNoGo(level: number, params: DifficultyParams, sound: Sou
       timerDisplay.textContent = formatTime(DURATION_MS);
 
       trialCounter = el('div', { className: 'exercise-trial-counter' });
-      trialCounter.textContent = `\u041f\u0440\u043e\u0431\u0430 0 \u0438\u0437 ~${estimatedTrials}`;
+      trialCounter.textContent = t('trial.counter', { current: 0, total: estimatedTrials });
 
       const header = el('div', { className: 'exercise-header' }, [timerDisplay, trialCounter]);
 

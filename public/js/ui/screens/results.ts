@@ -4,12 +4,13 @@ import { EXERCISE_CONFIGS, SESSION_RESULT_KEY, SESSION_BONUS_KEY, SESSION_MOOD_K
 import { getScoreTier, getLevel, getLevelTitle } from '../../core/progression.js';
 import { appState } from '../../main.js';
 import { createDisposables } from '../../core/disposables.js';
+import { t } from '../../core/i18n.js';
 
-const MOOD_OPTIONS: { mood: Mood; emoji: string; label: string }[] = [
-  { mood: 'energized', emoji: '\u26A1', label: '\u042D\u043D\u0435\u0440\u0433\u0438\u044F' },
-  { mood: 'calm', emoji: '\uD83D\uDE0C', label: '\u0421\u043F\u043E\u043A\u043E\u0439\u0441\u0442\u0432\u0438\u0435' },
-  { mood: 'tired', emoji: '\uD83D\uDE34', label: '\u0423\u0441\u0442\u0430\u043B\u043E\u0441\u0442\u044C' },
-  { mood: 'stressed', emoji: '\uD83D\uDE30', label: '\u0421\u0442\u0440\u0435\u0441\u0441' },
+const MOOD_KEYS: { mood: Mood; emoji: string; labelKey: 'mood.energized' | 'mood.calm' | 'mood.tired' | 'mood.stressed' }[] = [
+  { mood: 'energized', emoji: '\u26A1', labelKey: 'mood.energized' },
+  { mood: 'calm', emoji: '\uD83D\uDE0C', labelKey: 'mood.calm' },
+  { mood: 'tired', emoji: '\uD83D\uDE34', labelKey: 'mood.tired' },
+  { mood: 'stressed', emoji: '\uD83D\uDE30', labelKey: 'mood.stressed' },
 ];
 
 const MOOD_RANK: Record<Mood, number> = {
@@ -24,17 +25,15 @@ function getMoodComparisonMessage(pre: Mood, post: Mood): string {
   const postRank = MOOD_RANK[post];
 
   if (postRank > preRank) {
-    // Improved
-    const preLabel = MOOD_OPTIONS.find((o) => o.mood === pre)!.label.toLowerCase();
-    const postLabel = MOOD_OPTIONS.find((o) => o.mood === post)!.label.toLowerCase();
-    return `\u0422\u044B \u043D\u0430\u0447\u0430\u043B\u0430 \u0441 "${preLabel}", \u0430 \u0441\u0435\u0439\u0447\u0430\u0441 "${postLabel}"! \u0422\u0440\u0435\u043D\u0438\u0440\u043E\u0432\u043A\u0430 \u043F\u043E\u043C\u043E\u0433\u0430\u0435\u0442!`;
+    const preLabel = t(`mood.${pre}` as any).toLowerCase();
+    const postLabel = t(`mood.${post}` as any).toLowerCase();
+    return t('results.moodImproved', { pre: preLabel, post: postLabel });
   } else if (postRank === preRank) {
-    return '\u041E\u0442\u043B\u0438\u0447\u043D\u0430\u044F \u0441\u0442\u0430\u0431\u0438\u043B\u044C\u043D\u043E\u0441\u0442\u044C!';
+    return t('results.moodStable');
   } else if (preRank >= 2) {
-    // Was positive, went down
-    return '\u041F\u0440\u0435\u043A\u0440\u0430\u0441\u043D\u043E\u0435 \u043D\u0430\u0441\u0442\u0440\u043E\u0435\u043D\u0438\u0435! \u0422\u0430\u043A \u0434\u0435\u0440\u0436\u0430\u0442\u044C!';
+    return t('results.moodPositive');
   } else {
-    return '\u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0430\u0439 \u0442\u0440\u0435\u043D\u0438\u0440\u043E\u0432\u043A\u0438 \u2014 \u0441\u0442\u0430\u043D\u0435\u0442 \u043B\u0443\u0447\u0448\u0435!';
+    return t('results.moodKeepGoing');
   }
 }
 
@@ -50,11 +49,11 @@ function formatPercent(v: number): string {
 }
 
 function formatMs(v: number): string {
-  return `${Math.round(v)} мс`;
+  return `${Math.round(v)} ${t('metric.ms')}`;
 }
 
 function formatSeconds(v: number): string {
-  return `${v.toFixed(1)} с`;
+  return `${v.toFixed(1)} ${t('metric.sec')}`;
 }
 
 function getMetricsForExercise(result: ExerciseResult): MetricRow[] {
@@ -64,52 +63,52 @@ function getMetricsForExercise(result: ExerciseResult): MetricRow[] {
   switch (id) {
     case 'go-no-go':
       return [
-        { label: 'Точность', value: formatPercent(m.accuracy) },
-        { label: 'Ложные нажатия', value: String(m.commissionErrors ?? 0) },
-        { label: 'Пропуски', value: String(m.omissionErrors ?? 0) },
-        { label: 'Среднее время реакции', value: m.meanRT != null ? formatMs(m.meanRT) : '—' },
-        { label: 'Вариабельность RT', value: m.rtVariability != null ? m.rtVariability.toFixed(2) : '—' },
+        { label: t('metric.accuracy'), value: formatPercent(m.accuracy) },
+        { label: t('metric.commissionErrors'), value: String(m.commissionErrors ?? 0) },
+        { label: t('metric.omissions'), value: String(m.omissionErrors ?? 0) },
+        { label: t('metric.avgRT'), value: m.meanRT != null ? formatMs(m.meanRT) : '—' },
+        { label: t('metric.rtVariability'), value: m.rtVariability != null ? m.rtVariability.toFixed(2) : '—' },
       ];
 
     case 'n-back':
       return [
-        { label: 'Попадания', value: String(m.hits ?? 0) },
-        { label: 'Пропуски', value: String(m.misses ?? 0) },
-        { label: 'Ложные тревоги', value: String(m.falseAlarms ?? 0) },
-        { label: 'd-prime', value: m.dPrime != null ? m.dPrime.toFixed(2) : '—' },
-        { label: 'Точность', value: formatPercent(m.accuracy) },
+        { label: t('metric.hits'), value: String(m.hits ?? 0) },
+        { label: t('metric.omissions'), value: String(m.misses ?? 0) },
+        { label: t('metric.falseAlarms'), value: String(m.falseAlarms ?? 0) },
+        { label: t('metric.dPrime'), value: m.dPrime != null ? m.dPrime.toFixed(2) : '—' },
+        { label: t('metric.accuracy'), value: formatPercent(m.accuracy) },
       ];
 
     case 'flanker':
       return [
-        { label: 'Точность', value: formatPercent(m.accuracy) },
-        { label: 'RT конгруэнтные', value: m.rtCongruent != null ? formatMs(m.rtCongruent) : '—' },
-        { label: 'RT инконгруэнтные', value: m.rtIncongruent != null ? formatMs(m.rtIncongruent) : '—' },
-        { label: 'Интерференция', value: m.interferenceScore != null ? formatMs(m.interferenceScore) : '—' },
+        { label: t('metric.accuracy'), value: formatPercent(m.accuracy) },
+        { label: t('metric.rtCongruent'), value: m.rtCongruent != null ? formatMs(m.rtCongruent) : '—' },
+        { label: t('metric.rtIncongruent'), value: m.rtIncongruent != null ? formatMs(m.rtIncongruent) : '—' },
+        { label: t('metric.interference'), value: m.interferenceScore != null ? formatMs(m.interferenceScore) : '—' },
       ];
 
     case 'visual-search':
       return [
-        { label: 'Точность', value: formatPercent(m.accuracy) },
-        { label: 'Время поиска', value: m.searchTime != null ? formatSeconds(m.searchTime / 1000) : '—' },
-        { label: 'Элементов/сек', value: m.itemsPerSecond != null ? m.itemsPerSecond.toFixed(2) : '—' },
+        { label: t('metric.accuracy'), value: formatPercent(m.accuracy) },
+        { label: t('metric.searchTime'), value: m.searchTime != null ? formatSeconds(m.searchTime / 1000) : '—' },
+        { label: t('metric.itemsPerSec'), value: m.itemsPerSecond != null ? m.itemsPerSecond.toFixed(2) : '—' },
       ];
 
     case 'breathing':
       return [
-        { label: 'Завершённые циклы', value: String(m.correctTrials) },
-        { label: 'Длительность', value: formatSeconds(result.durationMs / 1000) },
+        { label: t('metric.completedCycles'), value: String(m.correctTrials) },
+        { label: t('metric.duration'), value: formatSeconds(result.durationMs / 1000) },
       ];
 
     case 'pomodoro':
       return [
-        { label: 'Длительность', value: formatSeconds(result.durationMs / 1000) },
-        { label: 'Завершённость', value: formatPercent(m.accuracy) },
+        { label: t('metric.duration'), value: formatSeconds(result.durationMs / 1000) },
+        { label: t('metric.completion'), value: formatPercent(m.accuracy) },
       ];
 
     default:
       return [
-        { label: 'Точность', value: formatPercent(m.accuracy) },
+        { label: t('metric.accuracy'), value: formatPercent(m.accuracy) },
       ];
   }
 }
@@ -172,8 +171,8 @@ export const renderResults: ScreenRender = (container, _params) => {
   if (!raw) {
     container.appendChild(
       el('div', { className: 'empty-state' }, [
-        el('p', { className: 'empty-state__text' }, ['Нет данных о результате.']),
-        el('a', { href: '#/exercises', className: 'btn btn--primary' }, ['К упражнениям']),
+        el('p', { className: 'empty-state__text' }, [t('results.noData')]),
+        el('a', { href: '#/exercises', className: 'btn btn--primary' }, [t('results.toExercises')]),
       ]),
     );
     return () => disposables.dispose();
@@ -183,7 +182,7 @@ export const renderResults: ScreenRender = (container, _params) => {
   try {
     result = JSON.parse(raw) as ExerciseResult;
   } catch {
-    container.appendChild(el('p', { className: 'card__subtitle' }, ['Ошибка чтения результата.']));
+    container.appendChild(el('p', { className: 'card__subtitle' }, [t('results.parseError')]));
     return () => disposables.dispose();
   }
 
@@ -195,10 +194,12 @@ export const renderResults: ScreenRender = (container, _params) => {
   const personalBest = data.progression.personalRecords[result.exerciseId] ?? 0;
   const isNewRecord = result.score > personalBest && personalBest > 0;
 
+  const exerciseName = t(`exercise.${result.exerciseId}.name` as any);
+
   // ── Header: icon + exercise name ──
   const header = el('div', { className: 'flex flex--center flex--gap-sm' }, [
     el('span', { className: 'icon--2x' }, [config.icon]),
-    el('h1', { className: 'screen__title' }, [config.name]),
+    el('h1', { className: 'screen__title' }, [exerciseName]),
   ]);
 
   // ── Score display ──
@@ -240,7 +241,7 @@ export const renderResults: ScreenRender = (container, _params) => {
   let bonusEl: HTMLElement | null = null;
   if (bonusEventFlag) {
     bonusEl = el('div', { className: 'bonus-banner' }, [
-      '\u0411\u043E\u043D\u0443\u0441\u043D\u043E\u0435 \u0441\u043E\u0431\u044B\u0442\u0438\u0435! \u0414\u0432\u043E\u0439\u043D\u043E\u0439 XP! \u26A1',
+      t('results.bonusBanner'),
     ]);
   }
 
@@ -251,14 +252,14 @@ export const renderResults: ScreenRender = (container, _params) => {
 
   // ── Level indicator ──
   const levelEl = el('div', { className: 'card__subtitle' }, [
-    `\u0423\u0440\u043E\u0432\u0435\u043D\u044C ${currentLevel} \u2014 ${levelTitle}`,
+    t('results.levelLabel', { level: currentLevel, title: levelTitle }),
   ]);
 
   // ── Personal record ──
   let recordEl: HTMLElement | null = null;
   if (isNewRecord) {
     recordEl = el('div', { className: 'record-banner' }, [
-      '\u041D\u043E\u0432\u044B\u0439 \u0440\u0435\u043A\u043E\u0440\u0434! \u{1F3C6}',
+      t('results.newRecord'),
     ]);
   }
 
@@ -266,7 +267,7 @@ export const renderResults: ScreenRender = (container, _params) => {
   const preMood = sessionStorage.getItem(SESSION_MOOD_KEY) as Mood | null;
   const moodSection = el('div', { className: 'card w-full max-w-sm' });
   const moodTitle = el('h3', { className: 'card__title card__title--center' }, [
-    '\u041A\u0430\u043A \u0442\u044B \u0441\u0435\u0431\u044F \u0447\u0443\u0432\u0441\u0442\u0432\u0443\u0435\u0448\u044C \u0441\u0435\u0439\u0447\u0430\u0441?',
+    t('results.moodNow'),
   ]);
   moodSection.appendChild(moodTitle);
 
@@ -274,10 +275,10 @@ export const renderResults: ScreenRender = (container, _params) => {
   const moodResultContainer = el('div', { className: 'card__subtitle text--center' });
   moodResultContainer.classList.add('hidden');
 
-  for (const opt of MOOD_OPTIONS) {
+  for (const opt of MOOD_KEYS) {
     const btn = el('button', { className: 'mood-modal__btn' }, [
       el('span', { className: 'mood-modal__emoji' }, [opt.emoji]),
-      el('span', { className: 'mood-modal__label' }, [opt.label]),
+      el('span', { className: 'mood-modal__label' }, [t(opt.labelKey)]),
     ]);
     disposables.addListener(btn, 'click', () => {
       moodOptionsContainer.classList.add('hidden');
@@ -289,7 +290,7 @@ export const renderResults: ScreenRender = (container, _params) => {
         );
       } else {
         moodResultContainer.appendChild(
-          el('p', null, ['\u0421\u043F\u0430\u0441\u0438\u0431\u043E \u0437\u0430 \u043E\u0442\u0432\u0435\u0442!']),
+          el('p', null, [t('results.moodThanks')]),
         );
       }
       // Store post-session mood
@@ -310,15 +311,15 @@ export const renderResults: ScreenRender = (container, _params) => {
     el('a', {
       href: `#/play/${result.exerciseId}`,
       className: 'btn btn--primary btn--full',
-    }, ['\u0415\u0449\u0451 \u0440\u0430\u0437']),
+    }, [t('results.playAgain')]),
     el('a', {
       href: '#/exercises',
       className: 'btn btn--secondary btn--full',
-    }, ['\u041A \u0443\u043F\u0440\u0430\u0436\u043D\u0435\u043D\u0438\u044F\u043C']),
+    }, [t('results.toExercises')]),
     el('a', {
       href: '#/dashboard',
       className: 'btn btn--ghost btn--full',
-    }, ['\u041D\u0430 \u0433\u043B\u0430\u0432\u043D\u0443\u044E']),
+    }, [t('results.toHome')]),
   ]);
 
   // ── Assemble ──

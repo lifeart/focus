@@ -3,13 +3,14 @@ import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
 import { createExerciseTimer, formatTime } from './helpers.js';
 import { BREATHING_PATTERNS } from '../constants.js';
+import { t } from '../core/i18n.js';
 
 type BreathingPhase = 'inhale' | 'hold' | 'exhale';
 
-const PHASE_LABELS: Record<BreathingPhase, string> = {
-  inhale: 'Вдох',
-  hold: 'Задержка',
-  exhale: 'Выдох',
+const PHASE_KEYS: Record<BreathingPhase, 'breathing.inhale' | 'breathing.hold' | 'breathing.exhale'> = {
+  inhale: 'breathing.inhale',
+  hold: 'breathing.hold',
+  exhale: 'breathing.exhale',
 };
 
 const SCALE_MIN = 0.6;
@@ -101,7 +102,7 @@ export function createBreathing(
     if (cycleIndex > completedCycles) {
       completedCycles = cycleIndex;
       if (cycleCounter) {
-        cycleCounter.textContent = `Цикл: ${completedCycles + 1}`;
+        cycleCounter.textContent = t('breathing.cycle', { n: completedCycles + 1 });
       }
     }
 
@@ -116,7 +117,7 @@ export function createBreathing(
 
     // Update phase label
     if (phaseLabel) {
-      phaseLabel.textContent = PHASE_LABELS[phase];
+      phaseLabel.textContent = t(PHASE_KEYS[phase]);
     }
 
     // Update circle
@@ -159,14 +160,15 @@ export function createBreathing(
       timerDisplay.textContent = formatTime(totalDurationMs);
 
       // Pattern info
+      const patternKey = selectedPattern === '4-4-4' ? 'breathing.pattern.444' : 'breathing.pattern.478';
       const patternInfo = el('div', { className: 'exercise-trial-counter' });
-      patternInfo.textContent = patternConfig.label;
+      patternInfo.textContent = t(patternKey as any);
 
       const header = el('div', { className: 'exercise-header' }, [timerDisplay, patternInfo]);
 
       // Phase label
       phaseLabel = el('div', { className: 'breathing-phase-label' });
-      phaseLabel.textContent = PHASE_LABELS.inhale;
+      phaseLabel.textContent = t('breathing.inhale');
       phaseLabel.style.textAlign = 'center';
       phaseLabel.style.fontSize = '1.5rem';
       phaseLabel.style.fontWeight = '600';
@@ -196,7 +198,7 @@ export function createBreathing(
 
       // Cycle counter
       cycleCounter = el('div', { className: 'breathing-cycle-counter' });
-      cycleCounter.textContent = 'Цикл: 1';
+      cycleCounter.textContent = t('breathing.cycle', { n: 1 });
       cycleCounter.style.textAlign = 'center';
       cycleCounter.style.marginTop = '2rem';
       cycleCounter.style.fontSize = '0.9rem';

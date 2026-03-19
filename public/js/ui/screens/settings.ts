@@ -1,21 +1,13 @@
-import type { ScreenRender, ThemeId, BreathingPattern } from '../../types.js';
+import type { ScreenRender, ThemeId, BreathingPattern, Locale } from '../../types.js';
 import { el, addClass } from '../renderer.js';
 import { appState, getSoundManager } from '../../main.js';
 import { THEME_UNLOCK_LEVELS, BREATHING_PATTERNS } from '../../constants.js';
 import { exportData, importData } from '../../core/storage.js';
 import { getLevel } from '../../core/progression.js';
 import { createDisposables } from '../../core/disposables.js';
-
-// ─── Theme display names ────────────────────────────────────────────
-
-const THEME_NAMES: Record<ThemeId, string> = {
-  dark: 'Тёмная',
-  light: 'Светлая',
-  ocean: 'Океан',
-  sunset: 'Закат',
-  forest: 'Лес',
-  amoled: 'AMOLED',
-};
+import { t } from '../../core/i18n.js';
+import { setLocale } from '../../core/i18n.js';
+import type { TranslationKey } from '../../i18n/keys.js';
 
 // ─── Render Settings ────────────────────────────────────────────────
 
@@ -30,7 +22,7 @@ export const renderSettings: ScreenRender = (container, _params) => {
   // ── Header ──
 
   const header = el('div', { className: 'screen__header' }, [
-    el('h1', { className: 'screen__title' }, ['Настройки']),
+    el('h1', { className: 'screen__title' }, [t('settings.title')]),
   ]);
   container.appendChild(header);
 
@@ -40,12 +32,12 @@ export const renderSettings: ScreenRender = (container, _params) => {
   // ── 1. Profile ──
 
   {
-    const section = createSection('Профиль');
+    const section = createSection(t('settings.profile'));
     const nameInput = el('input', {
       type: 'text',
       className: 'settings__input',
       value: data.profile.name,
-      placeholder: 'Ваше имя',
+      placeholder: t('settings.namePlaceholder'),
     }) as HTMLInputElement;
 
     const onBlur = () => {
@@ -61,7 +53,7 @@ export const renderSettings: ScreenRender = (container, _params) => {
     disposables.addListener(nameInput, 'blur', onBlur);
     disposables.addListener(nameInput, 'change', onBlur);
 
-    section.appendChild(el('label', { className: 'settings__label' }, ['Имя']));
+    section.appendChild(el('label', { className: 'settings__label' }, [t('settings.name')]));
     section.appendChild(nameInput);
     sections.appendChild(section);
   }
@@ -69,7 +61,7 @@ export const renderSettings: ScreenRender = (container, _params) => {
   // ── 2. Daily Goal ──
 
   {
-    const section = createSection('Дневная цель');
+    const section = createSection(t('settings.dailyGoal'));
     const options = [5, 10, 15];
     const chips = el('div', { className: 'settings__chips' });
 
@@ -78,7 +70,7 @@ export const renderSettings: ScreenRender = (container, _params) => {
       const chip = el(
         'button',
         { className: `settings__chip${isActive ? ' settings__chip--active' : ''}` },
-        [`${mins} мин`],
+        [`${mins} ${t('stats.min')}`],
       );
       disposables.addListener(chip, 'click', () => {
         appState.updateData((d) => {
@@ -97,9 +89,9 @@ export const renderSettings: ScreenRender = (container, _params) => {
   // ── 3. Sound Toggle ──
 
   {
-    const section = createSection('Звук');
+    const section = createSection(t('settings.sound'));
     const toggle = el('div', { className: 'settings__toggle-row' });
-    const label = el('span', null, [settings.soundEnabled ? 'Вкл' : 'Выкл']);
+    const label = el('span', null, [settings.soundEnabled ? t('settings.soundOn') : t('settings.soundOff')]);
     const btn = el(
       'button',
       { className: `settings__toggle${settings.soundEnabled ? ' settings__toggle--on' : ''}` },
@@ -114,7 +106,7 @@ export const renderSettings: ScreenRender = (container, _params) => {
       });
       getSoundManager().setEnabled(newVal);
       appState.emit({ type: 'settings-changed', settings: appState.getData().settings });
-      label.textContent = newVal ? 'Вкл' : 'Выкл';
+      label.textContent = newVal ? t('settings.soundOn') : t('settings.soundOff');
       if (newVal) {
         addClass(btn, 'settings__toggle--on');
       } else {
@@ -131,7 +123,7 @@ export const renderSettings: ScreenRender = (container, _params) => {
   // ── 4. Theme ──
 
   {
-    const section = createSection('Тема');
+    const section = createSection(t('settings.theme'));
     const grid = el('div', { className: 'settings__theme-grid' });
 
     const themeIds: ThemeId[] = ['dark', 'light', 'ocean', 'sunset', 'forest', 'amoled'];
@@ -145,17 +137,20 @@ export const renderSettings: ScreenRender = (container, _params) => {
       if (isActive) classes.push('settings__theme-card--active');
       if (!isUnlocked) classes.push('settings__theme-card--locked');
 
+      const themeName = t(`theme.${themeId}` as TranslationKey);
+
       const children: (Node | string)[] = [
-        el('span', { className: 'settings__theme-name' }, [THEME_NAMES[themeId]]),
+        el('span', { className: 'settings__theme-name' }, [themeName]),
       ];
 
       if (!isUnlocked) {
         children.push(
-          el('span', { className: 'settings__theme-lock' }, [`Ур. ${requiredLevel}`]),
+          el('span', { className: 'settings__theme-lock' }, [t('settings.levelRequired', { level: requiredLevel })]),
         );
       }
 
       const card = el('div', { className: classes.join(' ') }, children);
+      card.setAttribute('data-theme-id', themeId);
 
       if (isUnlocked) {
         disposables.addListener(card, 'click', () => {
@@ -178,12 +173,11 @@ export const renderSettings: ScreenRender = (container, _params) => {
   // ── 5. Breathing Pattern ──
 
   {
-    const section = createSection('Паттерн дыхания');
+    const section = createSection(t('settings.breathingPattern'));
     const chips = el('div', { className: 'settings__chips' });
     const patterns: BreathingPattern[] = ['4-4-4', '4-7-8'];
 
     for (const pattern of patterns) {
-      const patternInfo = BREATHING_PATTERNS[pattern];
       const isActive = settings.breathingPattern === pattern;
       const isLocked = pattern === '4-7-8' && userLevel < 5;
 
@@ -191,8 +185,9 @@ export const renderSettings: ScreenRender = (container, _params) => {
       if (isActive) classes.push('settings__chip--active');
       if (isLocked) classes.push('settings__chip--locked');
 
-      const label = isLocked ? `${patternInfo.label} (Ур. 5)` : patternInfo.label;
-      const chip = el('button', { className: classes.join(' ') }, [label]);
+      const patternKey = pattern === '4-4-4' ? 'breathing.pattern.444' : 'breathing.pattern.478';
+      const labelText = isLocked ? `${t(patternKey as TranslationKey)} (${t('settings.levelRequired', { level: 5 })})` : t(patternKey as TranslationKey);
+      const chip = el('button', { className: classes.join(' ') }, [labelText]);
 
       if (isLocked) {
         chip.setAttribute('disabled', '');
@@ -218,7 +213,7 @@ export const renderSettings: ScreenRender = (container, _params) => {
   // ── 6. Pomodoro Duration ──
 
   {
-    const section = createSection('Длительность помодоро');
+    const section = createSection(t('settings.pomodoroDuration'));
     const chips = el('div', { className: 'settings__chips' });
     const durations = [15, 20, 25];
 
@@ -227,7 +222,7 @@ export const renderSettings: ScreenRender = (container, _params) => {
       const chip = el(
         'button',
         { className: `settings__chip${isActive ? ' settings__chip--active' : ''}` },
-        [`${mins} мин`],
+        [`${mins} ${t('stats.min')}`],
       );
       disposables.addListener(chip, 'click', () => {
         appState.updateData((d) => {
@@ -243,13 +238,48 @@ export const renderSettings: ScreenRender = (container, _params) => {
     sections.appendChild(section);
   }
 
-  // ── 7. Export / Import ──
+  // ── 7. Language ──
 
   {
-    const section = createSection('Данные');
+    const section = createSection(t('settings.language'));
+    const chips = el('div', { className: 'settings__chips' });
+    const locales: Locale[] = ['ru', 'en', 'de', 'fr', 'es'];
+    const currentLocale = settings.locale || 'ru';
+
+    for (const locale of locales) {
+      const isActive = currentLocale === locale;
+      const chip = el(
+        'button',
+        { className: `settings__chip${isActive ? ' settings__chip--active' : ''}` },
+        [t(`lang.${locale}` as TranslationKey)],
+      );
+      chip.setAttribute('data-locale', locale);
+
+      disposables.addListener(chip, 'click', () => {
+        appState.updateData((d) => {
+          d.settings.locale = locale;
+        });
+        setLocale(locale);
+        appState.emit({ type: 'settings-changed', settings: appState.getData().settings });
+        // Force re-render by navigating to settings again
+        window.location.hash = '';
+        window.location.hash = '#/settings';
+      });
+
+      chips.appendChild(chip);
+    }
+
+    section.appendChild(chips);
+    sections.appendChild(section);
+  }
+
+  // ── 8. Export / Import ──
+
+  {
+    const section = createSection(t('settings.data'));
     const row = el('div', { className: 'settings__button-row' });
 
-    const exportBtn = el('button', { className: 'settings__btn' }, ['Экспорт данных']);
+    const exportBtn = el('button', { className: 'settings__btn' }, [t('settings.exportData')]);
     disposables.addListener(exportBtn, 'click', () => {
       const json = exportData(appState.getData());
       const blob = new Blob([json], { type: 'application/json' });
@@ -261,7 +291,7 @@ export const renderSettings: ScreenRender = (container, _params) => {
       URL.revokeObjectURL(url);
     });
 
-    const importBtn = el('button', { className: 'settings__btn' }, ['Импорт данных']);
+    const importBtn = el('button', { className: 'settings__btn' }, [t('settings.importData')]);
     disposables.addListener(importBtn, 'click', () => {
       const input = el('input', { type: 'file', accept: '.json', className: 'hidden' }) as HTMLInputElement;
       document.body.appendChild(input);
@@ -300,12 +330,12 @@ export const renderSettings: ScreenRender = (container, _params) => {
     sections.appendChild(section);
   }
 
-  // ── 8. Reset Progress ──
+  // ── 9. Reset Progress ──
 
   {
-    const section = createSection('Сброс');
+    const section = createSection(t('settings.resetProgress'));
 
-    const resetBtn = el('button', { className: 'settings__btn settings__btn--danger' }, ['Сбросить прогресс']);
+    const resetBtn = el('button', { className: 'settings__btn settings__btn--danger' }, [t('settings.resetProgress')]);
 
     disposables.addListener(resetBtn, 'click', () => {
       showResetConfirmation(section, disposables);
@@ -341,9 +371,7 @@ function updateChips(container: HTMLElement, activeValue: number): void {
 function updateThemeCards(container: HTMLElement, activeTheme: ThemeId): void {
   const cards = container.querySelectorAll('.settings__theme-card');
   cards.forEach((card) => {
-    const nameEl = card.querySelector('.settings__theme-name');
-    const name = nameEl?.textContent || '';
-    const themeId = Object.entries(THEME_NAMES).find(([, v]) => v === name)?.[0];
+    const themeId = (card as HTMLElement).getAttribute('data-theme-id');
     card.classList.toggle('settings__theme-card--active', themeId === activeTheme);
   });
 }
@@ -370,17 +398,17 @@ function showResetConfirmation(
   }
 
   const confirm = el('div', { className: 'settings__confirm' }, [
-    el('p', { className: 'settings__confirm-text' }, ['Вы уверены? Все данные будут удалены.']),
+    el('p', { className: 'settings__confirm-text' }, [t('settings.resetConfirm')]),
   ]);
 
   const btnRow = el('div', { className: 'settings__button-row' });
 
-  const cancelBtn = el('button', { className: 'settings__btn' }, ['Отмена']);
+  const cancelBtn = el('button', { className: 'settings__btn' }, [t('settings.cancel')]);
   disposables.addListener(cancelBtn, 'click', () => {
     confirm.remove();
   });
 
-  const confirmBtn = el('button', { className: 'settings__btn settings__btn--danger' }, ['Сбросить']);
+  const confirmBtn = el('button', { className: 'settings__btn settings__btn--danger' }, [t('settings.resetBtn')]);
   disposables.addListener(confirmBtn, 'click', () => {
     appState.resetData();
     window.location.hash = '#/onboarding';

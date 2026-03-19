@@ -6,14 +6,15 @@ import type {
   EarnedBadge,
   WeeklyChallenge,
   BadgeTier,
+  ScoreTier,
 } from '../types.js';
 import {
   xpForLevel,
-  LEVEL_TITLES,
   SCORE_TIERS,
   BADGE_DEFINITIONS,
   WEEKLY_CHALLENGE_TYPES,
 } from '../constants.js';
+import { t } from './i18n.js';
 
 // ─── XP Calculation ──────────────────────────────────────────────────
 
@@ -45,7 +46,7 @@ export function getLevel(totalXP: number): number {
 
 export function getLevelTitle(level: number): string {
   const clamped = Math.max(1, Math.min(30, level));
-  return LEVEL_TITLES[clamped] || LEVEL_TITLES[30];
+  return t(`level.${clamped}` as any);
 }
 
 export function getXPProgress(totalXP: number): { current: number; required: number; percent: number } {
@@ -209,12 +210,24 @@ export function checkWeeklyChallenge(
 
 // ─── Score Tier ──────────────────────────────────────────────────────
 
-export function getScoreTier(score: number): { label: string; showPercent: boolean } {
-  for (const tier of SCORE_TIERS) {
-    if (score >= tier.min && score <= tier.max) {
-      return { label: tier.label, showPercent: tier.showPercent };
+// Map from ScoreTier id to translation key suffix
+const TIER_KEY_MAP: Record<string, string> = {
+  'warmup': 'warmup',
+  'good-start': 'goodStart',
+  'great': 'great',
+  'amazing': 'amazing',
+  'perfect': 'perfect',
+};
+
+export function getScoreTier(score: number): { label: string; tier: ScoreTier; showPercent: boolean } {
+  for (const tierDef of SCORE_TIERS) {
+    if (score >= tierDef.min && score <= tierDef.max) {
+      const keySuffix = TIER_KEY_MAP[tierDef.tier] || tierDef.tier;
+      return { label: t(`scoreTier.${keySuffix}` as any), tier: tierDef.tier, showPercent: tierDef.showPercent };
     }
   }
   // Fallback
-  return { label: SCORE_TIERS[0].label, showPercent: SCORE_TIERS[0].showPercent };
+  const firstTier = SCORE_TIERS[0];
+  const keySuffix = TIER_KEY_MAP[firstTier.tier] || firstTier.tier;
+  return { label: t(`scoreTier.${keySuffix}` as any), tier: firstTier.tier, showPercent: firstTier.showPercent };
 }

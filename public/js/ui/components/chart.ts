@@ -1,4 +1,6 @@
 import { el } from '../renderer.js';
+import { t } from '../../core/i18n.js';
+import type { TranslationKey } from '../../i18n/keys.js';
 
 export interface LineChartData {
   labels: string[];
@@ -98,6 +100,15 @@ export function renderLineChart(
   }
 }
 
+const MONTH_KEYS: TranslationKey[] = [
+  'month.0', 'month.1', 'month.2', 'month.3', 'month.4', 'month.5',
+  'month.6', 'month.7', 'month.8', 'month.9', 'month.10', 'month.11',
+];
+
+const DAY_HEADER_KEYS: TranslationKey[] = [
+  'day.mon', 'day.tue', 'day.wed', 'day.thu', 'day.fri', 'day.sat', 'day.sun',
+];
+
 export function renderCalendarHeatmap(
   container: HTMLElement,
   activeDates: string[],
@@ -115,22 +126,16 @@ export function renderCalendarHeatmap(
   let startDow = firstDay.getDay() - 1;
   if (startDow < 0) startDow = 6;
 
-  const MONTH_NAMES = [
-    'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
-  ];
-
   const title = el('div', { className: 'calendar-heatmap__title' }, [
-    `${MONTH_NAMES[month]} ${year}`,
+    `${t(MONTH_KEYS[month])} ${year}`,
   ]);
   wrapper.appendChild(title);
 
   const grid = el('div', { className: 'calendar-heatmap__grid' });
 
   // Day headers
-  const dayHeaders = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-  for (const dh of dayHeaders) {
-    grid.appendChild(el('div', { className: 'calendar-heatmap__header' }, [dh]));
+  for (const key of DAY_HEADER_KEYS) {
+    grid.appendChild(el('div', { className: 'calendar-heatmap__header' }, [t(key)]));
   }
 
   // Empty cells before first day
