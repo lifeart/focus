@@ -4,6 +4,10 @@ A brain training app for teens. Four cognitive exercises based on real neuropsyc
 
 Built with zero frameworks — just TypeScript, CSS, and the Web Audio API.
 
+<p align="center">
+  <img src="demo.gif" alt="Focus app demo — dashboard, exercise, results" width="390">
+</p>
+
 ## What it does
 
 **Four cognitive exercises**, each targeting a specific executive function:
