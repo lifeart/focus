@@ -4,7 +4,7 @@ import { EXERCISE_CONFIGS, SESSION_RESULT_KEY, SESSION_BONUS_KEY, SESSION_MOOD_K
 import { getScoreTier, getLevel, getLevelTitle } from '../../core/progression.js';
 import { appState, getSoundManager } from '../../main.js';
 import { createDisposables } from '../../core/disposables.js';
-import { t } from '../../core/i18n.js';
+import { t, td } from '../../core/i18n.js';
 import { createConfetti } from '../components/confetti.js';
 import { showCelebrations } from '../components/celebration-overlay.js';
 import type { CelebrationData } from '../components/celebration-overlay.js';
@@ -28,8 +28,8 @@ function getMoodComparisonMessage(pre: Mood, post: Mood): string {
   const postRank = MOOD_RANK[post];
 
   if (postRank > preRank) {
-    const preLabel = t(`mood.${pre}` as any).toLowerCase();
-    const postLabel = t(`mood.${post}` as any).toLowerCase();
+    const preLabel = td(`mood.${pre}`).toLowerCase();
+    const postLabel = td(`mood.${post}`).toLowerCase();
     return t('results.moodImproved', { pre: preLabel, post: postLabel });
   } else if (postRank === preRank) {
     return t('results.moodStable');
@@ -180,7 +180,7 @@ export const renderResults: ScreenRender = (container, _params) => {
   const personalBest = data.progression.personalRecords[result.exerciseId] ?? 0;
   const isNewRecord = result.score > personalBest && personalBest > 0;
 
-  const exerciseName = t(`exercise.${result.exerciseId}.name` as any);
+  const exerciseName = td(`exercise.${result.exerciseId}.name`);
 
   // ── Header: icon + exercise name ──
   const header = el('div', { className: 'flex flex--center flex--gap-sm' }, [
@@ -221,7 +221,7 @@ export const renderResults: ScreenRender = (container, _params) => {
     'perfect': 'results.encourage.perfect',
   };
   const encourageEl = el('p', { className: 'results-encouragement' }, [
-    t(encourageKeyMap[tier.tier] as any),
+    td(encourageKeyMap[tier.tier]),
   ]);
 
   // ── Metrics ──

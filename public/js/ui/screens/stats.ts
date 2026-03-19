@@ -7,7 +7,7 @@ import { renderLineChart, renderCalendarHeatmap } from '../components/chart.js';
 import { renderBadgeCard } from '../components/badge-card.js';
 import { renderWeeklyRecap } from '../components/weekly-recap.js';
 import { createDisposables } from '../../core/disposables.js';
-import { t } from '../../core/i18n.js';
+import { t, td } from '../../core/i18n.js';
 import { getBaselineComparison } from '../../core/baseline.js';
 
 function formatFocusTime(ms: number): string {
@@ -156,7 +156,7 @@ export const renderStats: ScreenRender = (container, _params) => {
 
     const barWidth = Math.max(5, Math.round((timeMs / maxTime) * 100));
     const timeFormatted = formatFocusTime(timeMs);
-    const exerciseName = t(`exercise.${exerciseId}.name` as any);
+    const exerciseName = td(`exercise.${exerciseId}.name`);
 
     const row = el('div', { className: 'stats-breakdown__row' }, [
       el('div', { className: 'stats-breakdown__info' }, [
@@ -196,7 +196,7 @@ export const renderStats: ScreenRender = (container, _params) => {
       if (!comparison) continue;
 
       const sign = comparison.improvement >= 0 ? '+' : '';
-      const exerciseName = t(`exercise.${exerciseId}.name` as any);
+      const exerciseName = td(`exercise.${exerciseId}.name`);
 
       const row = el('div', { className: 'stats-breakdown__row' }, [
         el('div', { className: 'stats-breakdown__info' }, [

@@ -2,7 +2,7 @@ import type { Exercise, ExerciseResult, ExerciseMetrics, DifficultyParams, Sound
 import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
 import { formatTime } from './helpers.js';
-import { t } from '../core/i18n.js';
+import { t, td } from '../core/i18n.js';
 
 type PomodoroState = 'focus' | 'break' | 'done';
 
@@ -28,7 +28,7 @@ function sendNotification(body: string): void {
 
 function randomQuote(): string {
   const quoteIndex = Math.floor(Math.random() * 13);
-  return t(`quote.${quoteIndex}` as any);
+  return td(`quote.${quoteIndex}`);
 }
 
 function createProgressRing(): { svg: SVGSVGElement; circle: SVGCircleElement } {

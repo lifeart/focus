@@ -3,7 +3,7 @@ import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
 import { createExerciseTimer, formatTime } from './helpers.js';
 import { BREATHING_PATTERNS } from '../constants.js';
-import { t } from '../core/i18n.js';
+import { t, td } from '../core/i18n.js';
 
 type BreathingPhase = 'inhale' | 'hold' | 'exhale';
 
@@ -162,7 +162,7 @@ export function createBreathing(
       // Pattern info
       const patternKey = selectedPattern === '4-4-4' ? 'breathing.pattern.444' : 'breathing.pattern.478';
       const patternInfo = el('div', { className: 'exercise-trial-counter' });
-      patternInfo.textContent = t(patternKey as any);
+      patternInfo.textContent = td(patternKey);
 
       const header = el('div', { className: 'exercise-header' }, [timerDisplay, patternInfo]);
 

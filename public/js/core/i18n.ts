@@ -36,6 +36,11 @@ export function t(key: TranslationKey, params?: Record<string, string | number>)
   return text;
 }
 
+/** Translate a dynamically constructed key. Use when the key is built from variables at runtime. */
+export function td(key: string, params?: Record<string, string | number>): string {
+  return t(key as TranslationKey, params);
+}
+
 export function tPlural(key: TranslationKey, count: number, params?: Record<string, string | number>): string {
   const raw = currentTable[key] ?? TRANSLATIONS['en'][key] ?? '';
   const forms = raw.split('|');

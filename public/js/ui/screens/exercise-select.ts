@@ -3,7 +3,7 @@ import { el, addClass } from '../renderer.js';
 import { appState } from '../../main.js';
 import { EXERCISE_CONFIGS } from '../../constants.js';
 import { getScoreTier } from '../../core/progression.js';
-import { t } from '../../core/i18n.js';
+import { t, td } from '../../core/i18n.js';
 
 interface CategoryGroup {
   labelKey: 'category.cognitive' | 'category.relaxation' | 'category.productivity';
@@ -62,9 +62,9 @@ export const renderExerciseSelect: ScreenRender = (container, _params) => {
       const bestScore = personalRecords[exerciseId] ?? 0;
       const tier = getScoreTier(bestScore);
 
-      const exerciseName = t(`exercise.${exerciseId}.name` as any);
-      const exerciseDesc = t(`exercise.${exerciseId}.description` as any);
-      const categoryLabel = t(`category.${config.category}` as any);
+      const exerciseName = td(`exercise.${exerciseId}.name`);
+      const exerciseDesc = td(`exercise.${exerciseId}.description`);
+      const categoryLabel = td(`category.${config.category}`);
 
       const scoreDisplay = bestScore > 0
         ? `${bestScore} — ${tier.label}`

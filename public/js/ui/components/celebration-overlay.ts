@@ -1,5 +1,5 @@
 import { el } from '../renderer.js';
-import { t } from '../../core/i18n.js';
+import { t, td } from '../../core/i18n.js';
 import { createConfetti } from './confetti.js';
 import { BADGE_DEFINITIONS } from '../../constants.js';
 import type { SoundManager, EarnedBadge, Disposables, ThemeId } from '../../types.js';
@@ -73,7 +73,7 @@ function showLevelUpOverlay(
     const unlockItems: (Node | string)[] = [];
     for (const theme of data.unlockedThemes) {
       unlockItems.push(
-        el('div', null, [t('celebration.unlockedTheme', { theme: t(`theme.${theme}` as any) })]),
+        el('div', null, [t('celebration.unlockedTheme', { theme: td(`theme.${theme}`) })]),
       );
     }
     if (data.unlockedAvatarLevel) {
@@ -133,9 +133,9 @@ function showBadgeOverlay(
 
     const badgeDef = BADGE_DEFINITIONS.find((d) => d.id === badge.id);
     const badgeIcon = badgeDef?.icon ?? '\uD83C\uDFC5';
-    const badgeName = t(`badge.${badge.id}.name` as any);
-    const badgeDesc = t(`badge.${badge.id}.${badge.tier}` as any);
-    const tierLabel = t(`badgeTier.${badge.tier}` as any);
+    const badgeName = td(`badge.${badge.id}.name`);
+    const badgeDesc = td(`badge.${badge.id}.${badge.tier}`);
+    const tierLabel = td(`badgeTier.${badge.tier}`);
 
     const tierClass = `celebration__tier celebration__tier--${badge.tier}`;
 

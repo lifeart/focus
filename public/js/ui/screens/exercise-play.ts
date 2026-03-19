@@ -17,7 +17,7 @@ import type { CelebrationData } from '../components/celebration-overlay.js';
 import type { EarnedBadge, ThemeId } from '../../types.js';
 import { updateDifficulty } from '../../core/adaptive.js';
 import { createSessionByType } from '../../core/session.js';
-import { t } from '../../core/i18n.js';
+import { t, td } from '../../core/i18n.js';
 import { getBaselineExercises, getBaselineParams, createBaselineResult } from '../../core/baseline.js';
 import { showToast } from '../components/toast.js';
 
@@ -250,7 +250,7 @@ function renderSingleExercise(
   let isPaused = false;
   let isFinished = false;
 
-  const exerciseName = t(`exercise.${exId}.name` as any);
+  const exerciseName = td(`exercise.${exId}.name`);
 
   // Build UI
   const header = el('div', { className: 'exercise-header' }, [
@@ -435,7 +435,7 @@ function renderSessionMode(
     for (let i = 0; i < plan.exercises.length; i++) {
       const exId = plan.exercises[i];
       const config = EXERCISE_CONFIGS[exId];
-      const exerciseName = t(`exercise.${exId}.name` as any);
+      const exerciseName = td(`exercise.${exId}.name`);
       planList.appendChild(el('div', { className: 'session-plan-item' }, [
         el('span', { className: 'session-plan-item__num' }, [`${i + 1}.`]),
         el('span', { className: 'session-plan-item__icon' }, [config.icon]),
@@ -466,8 +466,8 @@ function renderSessionMode(
 
   function showTransition(nextExId: ExerciseId): void {
     clear(container);
-    const exerciseName = t(`exercise.${nextExId}.name` as any);
-    const exerciseDesc = t(`exercise.${nextExId}.description` as any);
+    const exerciseName = td(`exercise.${nextExId}.name`);
+    const exerciseDesc = td(`exercise.${nextExId}.description`);
 
     const transitionScreen = el('div', { className: 'screen__stub' }, [
       el('p', { className: 'session-transition__label' }, [
@@ -494,7 +494,7 @@ function renderSessionMode(
     clear(container);
     addClass(container, 'screen');
 
-    const exerciseName = t(`exercise.${exId}.name` as any);
+    const exerciseName = td(`exercise.${exId}.name`);
     let exerciseFinished = false;
 
     const header = el('div', { className: 'exercise-header' }, [
@@ -773,7 +773,7 @@ function renderBaselineMode(
 
   function runExercise(exId: ExerciseId): void {
     container.innerHTML = '';
-    const exerciseName = t(`exercise.${exId}.name` as any);
+    const exerciseName = td(`exercise.${exId}.name`);
     let exerciseFinished = false;
 
     const header = el('div', { className: 'exercise-header' }, [

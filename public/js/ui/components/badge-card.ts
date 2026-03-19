@@ -1,5 +1,5 @@
 import { el } from '../renderer.js';
-import { t } from '../../core/i18n.js';
+import { td } from '../../core/i18n.js';
 import type { BadgeDefinition, BadgeTier } from '../../types.js';
 
 const TIER_COLORS: Record<BadgeTier, string> = {
@@ -31,20 +31,20 @@ export function renderBadgeCard(
   card.appendChild(iconEl);
 
   // Name - use i18n key
-  const nameText = t(`badge.${badge.id}.name` as any);
+  const nameText = td(`badge.${badge.id}.name`);
   const nameEl = el('div', { className: 'badge-card__name' }, [nameText]);
   card.appendChild(nameEl);
 
   // Tier indicator
   if (!isLocked) {
-    const tierLabel = t(`badgeTier.${earned!}` as any);
+    const tierLabel = td(`badgeTier.${earned!}`);
     const tierEl = el('div', { className: 'badge-card__tier' }, [tierLabel]);
     tierEl.style.color = TIER_COLORS[earned!];
     card.appendChild(tierEl);
   }
 
   // Description / condition - use i18n key
-  const descText = t(`badge.${badge.id}.${displayTier}` as any);
+  const descText = td(`badge.${badge.id}.${displayTier}`);
   const descEl = el('div', { className: 'badge-card__desc' }, [descText]);
   card.appendChild(descEl);
 

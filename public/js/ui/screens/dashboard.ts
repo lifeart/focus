@@ -7,7 +7,7 @@ import { renderAvatar } from '../components/avatar.js';
 import { renderStreakDisplay } from '../components/streak-display.js';
 import { renderProgressBar } from '../components/progress-bar.js';
 import { createDisposables } from '../../core/disposables.js';
-import { t, tPlural } from '../../core/i18n.js';
+import { t, td, tPlural } from '../../core/i18n.js';
 import { shouldPromptBaseline } from '../../core/baseline.js';
 
 // ─── Mood config ────────────────────────────────────────────────────
@@ -333,7 +333,7 @@ export const renderDashboard: ScreenRender = (container, _params) => {
       : dailyChallenge.type === 'n-back-level' ? 'nBackLevel'
       : dailyChallenge.type === 'streak-day' ? 'streakDay'
       : 'accuracyStreak'
-    }` as any;
+    }`;
 
     const dailyChallengeCard = el('div', { className: 'card' }, [
       el('div', { className: 'card__header' }, [
@@ -342,7 +342,7 @@ export const renderDashboard: ScreenRender = (container, _params) => {
           ? el('span', { className: 'badge badge--success' }, [t('dashboard.dailyChallengeComplete')])
           : el('span', { className: 'badge badge--primary' }, [`${dailyChallenge.progress}/${dailyChallenge.target}`]),
       ]),
-      el('p', { className: 'card__subtitle' }, [t(dailyChallengeDescKey)]),
+      el('p', { className: 'card__subtitle' }, [td(dailyChallengeDescKey)]),
     ]);
 
     const cleanupDailyChallenge = renderProgressBar(dailyChallengeCard, {
@@ -378,7 +378,7 @@ export const renderDashboard: ScreenRender = (container, _params) => {
   const challengeComplete = checkWeeklyChallenge(weeklyChallenge, progression);
 
   // Translate challenge description via key
-  const challengeDescKey = `challenge.${weeklyChallenge.type === 'perfect-exercises' ? 'perfectExercises' : weeklyChallenge.type === 'total-sessions' ? 'totalSessions' : weeklyChallenge.type === 'focus-time' ? 'focusTime' : 'noErrors'}` as any;
+  const challengeDescKey = `challenge.${weeklyChallenge.type === 'perfect-exercises' ? 'perfectExercises' : weeklyChallenge.type === 'total-sessions' ? 'totalSessions' : weeklyChallenge.type === 'focus-time' ? 'focusTime' : 'noErrors'}`;
 
   const challengeCard = el('div', { className: 'card' }, [
     el('div', { className: 'card__header' }, [
@@ -387,7 +387,7 @@ export const renderDashboard: ScreenRender = (container, _params) => {
         ? el('span', { className: 'badge badge--success' }, [t('dashboard.challengeComplete')])
         : el('span', { className: 'badge badge--primary' }, [`${weeklyChallenge.progress}/${weeklyChallenge.target}`]),
     ]),
-    el('p', { className: 'card__subtitle' }, [t(challengeDescKey)]),
+    el('p', { className: 'card__subtitle' }, [td(challengeDescKey)]),
   ]);
 
   const cleanupChallenge = renderProgressBar(challengeCard, {
@@ -435,7 +435,7 @@ export const renderDashboard: ScreenRender = (container, _params) => {
     for (const result of recent) {
       const config = EXERCISE_CONFIGS[result.exerciseId];
       const tier = getScoreTier(result.score);
-      const exerciseName = t(`exercise.${result.exerciseId}.name` as any);
+      const exerciseName = td(`exercise.${result.exerciseId}.name`);
       const tierLabel = tier.label;
       const item = el('div', { className: 'activity-item' }, [
         el('div', { className: 'activity-item__icon' }, [config?.icon || '\u2753']),

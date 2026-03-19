@@ -19,7 +19,7 @@ import {
   STREAK_FREEZE_EARN_INTERVAL,
   XP_SOURCES,
 } from '../constants.js';
-import { t } from './i18n.js';
+import { td } from './i18n.js';
 
 // ─── XP Calculation ──────────────────────────────────────────────────
 
@@ -51,7 +51,7 @@ export function getLevel(totalXP: number): number {
 
 export function getLevelTitle(level: number): string {
   const clamped = Math.max(1, Math.min(30, level));
-  return t(`level.${clamped}` as any);
+  return td(`level.${clamped}`);
 }
 
 export function getXPProgress(totalXP: number): { current: number; required: number; percent: number } {
@@ -387,13 +387,13 @@ export function getScoreTier(score: number): { label: string; tier: ScoreTier; s
   for (const tierDef of SCORE_TIERS) {
     if (score >= tierDef.min && score <= tierDef.max) {
       const keySuffix = TIER_KEY_MAP[tierDef.tier] || tierDef.tier;
-      return { label: t(`scoreTier.${keySuffix}` as any), tier: tierDef.tier, showPercent: tierDef.showPercent };
+      return { label: td(`scoreTier.${keySuffix}`), tier: tierDef.tier, showPercent: tierDef.showPercent };
     }
   }
   // Fallback
   const firstTier = SCORE_TIERS[0];
   const keySuffix = TIER_KEY_MAP[firstTier.tier] || firstTier.tier;
-  return { label: t(`scoreTier.${keySuffix}` as any), tier: firstTier.tier, showPercent: firstTier.showPercent };
+  return { label: td(`scoreTier.${keySuffix}`), tier: firstTier.tier, showPercent: firstTier.showPercent };
 }
 
 // ─── Daily Challenge ──────────────────────────────────────────────────
