@@ -3,7 +3,7 @@ import { DIFFICULTY_TABLE } from '../constants.js';
 
 // Baseline exercises run at Level 1 with fixed parameters (no adaptive difficulty)
 const BASELINE_EXERCISES: ExerciseId[] = ['go-no-go', 'flanker', 'n-back'];
-const BASELINE_DURATION_MS = 60_000; // 1 minute per exercise
+const BASELINE_DURATION_MS = 90_000; // 90 seconds per exercise for reliable signal trials
 
 export function getBaselineExercises(): ExerciseId[] {
   return [...BASELINE_EXERCISES];

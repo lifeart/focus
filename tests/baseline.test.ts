@@ -88,8 +88,8 @@ describe('getBaselineParams', () => {
 });
 
 describe('getBaselineDurationMs', () => {
-  it('returns 60000 (1 minute)', () => {
-    expect(getBaselineDurationMs()).toBe(60000);
+  it('returns 90000 (90 seconds)', () => {
+    expect(getBaselineDurationMs()).toBe(90000);
   });
 });
 

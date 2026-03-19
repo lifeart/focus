@@ -157,7 +157,60 @@ export const renderDashboard: ScreenRender = (container, _params) => {
   ]);
   grid.appendChild(greeting);
 
-  // ── 2. XP Progress card ───────────────────────────────────────────
+  // ── 2. Session type selector ─────────────────────────────────────
+
+  const quickStartCard = el('div', { className: 'card bento-grid__item--wide' }, [
+    el('h3', { className: 'card__title' }, [t('dashboard.chooseSession')]),
+  ]);
+
+  // Quick Start — primary, prominent
+  const quickBtn = el('button', { className: 'btn btn--primary btn--lg btn--full session-type-btn' }, [
+    el('span', { className: 'session-type-btn__icon' }, ['\u26A1']),
+    el('span', { className: 'session-type-btn__text' }, [
+      el('span', { className: 'session-type-btn__label' }, [t('dashboard.sessionQuick')]),
+      el('span', { className: 'session-type-btn__desc' }, [t('dashboard.sessionQuickDesc')]),
+    ]),
+  ]);
+
+  disposables.addListener(quickBtn, 'click', () => {
+    sessionStorage.setItem(SESSION_TYPE_KEY, 'quick');
+    window.location.hash = '#/session';
+  });
+
+  // Standard — secondary
+  const standardBtn = el('button', { className: 'btn btn--secondary btn--full session-type-btn' }, [
+    el('span', { className: 'session-type-btn__icon' }, ['\uD83C\uDFAF']),
+    el('span', { className: 'session-type-btn__text' }, [
+      el('span', { className: 'session-type-btn__label' }, [t('dashboard.sessionStandard')]),
+      el('span', { className: 'session-type-btn__desc' }, [t('dashboard.sessionStandardDesc')]),
+    ]),
+  ]);
+
+  disposables.addListener(standardBtn, 'click', () => {
+    sessionStorage.setItem(SESSION_TYPE_KEY, 'standard');
+    showMoodModal(disposables);
+  });
+
+  // Deep Focus — secondary
+  const deepBtn = el('button', { className: 'btn btn--secondary btn--full session-type-btn' }, [
+    el('span', { className: 'session-type-btn__icon' }, ['\uD83E\uDDE0']),
+    el('span', { className: 'session-type-btn__text' }, [
+      el('span', { className: 'session-type-btn__label' }, [t('dashboard.sessionDeep')]),
+      el('span', { className: 'session-type-btn__desc' }, [t('dashboard.sessionDeepDesc')]),
+    ]),
+  ]);
+
+  disposables.addListener(deepBtn, 'click', () => {
+    sessionStorage.setItem(SESSION_TYPE_KEY, 'deep');
+    showMoodModal(disposables);
+  });
+
+  quickStartCard.appendChild(quickBtn);
+  quickStartCard.appendChild(standardBtn);
+  quickStartCard.appendChild(deepBtn);
+  grid.appendChild(quickStartCard);
+
+  // ── 3. XP Progress card ───────────────────────────────────────────
 
   const xpProgress = getXPProgress(progression.totalXP);
   const xpCard = el('div', { className: 'card bento-grid__item--wide' }, [
@@ -358,59 +411,6 @@ export const renderDashboard: ScreenRender = (container, _params) => {
     ]);
     grid.appendChild(baselineCard);
   }
-
-  // ── 6. Session type selector ─────────────────────────────────────
-
-  const quickStartCard = el('div', { className: 'card bento-grid__item--wide' }, [
-    el('h3', { className: 'card__title' }, [t('dashboard.chooseSession')]),
-  ]);
-
-  // Quick Start — primary, prominent
-  const quickBtn = el('button', { className: 'btn btn--primary btn--lg btn--full session-type-btn' }, [
-    el('span', { className: 'session-type-btn__icon' }, ['\u26A1']),
-    el('span', { className: 'session-type-btn__text' }, [
-      el('span', { className: 'session-type-btn__label' }, [t('dashboard.sessionQuick')]),
-      el('span', { className: 'session-type-btn__desc' }, [t('dashboard.sessionQuickDesc')]),
-    ]),
-  ]);
-
-  disposables.addListener(quickBtn, 'click', () => {
-    sessionStorage.setItem(SESSION_TYPE_KEY, 'quick');
-    window.location.hash = '#/session';
-  });
-
-  // Standard — secondary
-  const standardBtn = el('button', { className: 'btn btn--secondary btn--full session-type-btn' }, [
-    el('span', { className: 'session-type-btn__icon' }, ['\uD83C\uDFAF']),
-    el('span', { className: 'session-type-btn__text' }, [
-      el('span', { className: 'session-type-btn__label' }, [t('dashboard.sessionStandard')]),
-      el('span', { className: 'session-type-btn__desc' }, [t('dashboard.sessionStandardDesc')]),
-    ]),
-  ]);
-
-  disposables.addListener(standardBtn, 'click', () => {
-    sessionStorage.setItem(SESSION_TYPE_KEY, 'standard');
-    showMoodModal(disposables);
-  });
-
-  // Deep Focus — secondary
-  const deepBtn = el('button', { className: 'btn btn--secondary btn--full session-type-btn' }, [
-    el('span', { className: 'session-type-btn__icon' }, ['\uD83E\uDDE0']),
-    el('span', { className: 'session-type-btn__text' }, [
-      el('span', { className: 'session-type-btn__label' }, [t('dashboard.sessionDeep')]),
-      el('span', { className: 'session-type-btn__desc' }, [t('dashboard.sessionDeepDesc')]),
-    ]),
-  ]);
-
-  disposables.addListener(deepBtn, 'click', () => {
-    sessionStorage.setItem(SESSION_TYPE_KEY, 'deep');
-    showMoodModal(disposables);
-  });
-
-  quickStartCard.appendChild(quickBtn);
-  quickStartCard.appendChild(standardBtn);
-  quickStartCard.appendChild(deepBtn);
-  grid.appendChild(quickStartCard);
 
   // ── 7. Recent Activity card ───────────────────────────────────────
 

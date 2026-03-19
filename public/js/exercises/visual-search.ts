@@ -1,7 +1,7 @@
 import type { Exercise, ExerciseResult, ExerciseMetrics, DifficultyParams, SoundManager } from '../types.js';
 import { el } from '../ui/renderer.js';
 import { createDisposables } from '../core/disposables.js';
-import { createExerciseTimer, showFeedback, formatTime, calculateCV, calculateLapseRate, calculateSearchSlope } from './helpers.js';
+import { createExerciseTimer, showFeedback, formatTime, calculateCV, calculateLapseRate, calculateSearchSlope, MIN_RT_MS } from './helpers.js';
 import { t } from '../core/i18n.js';
 
 const DURATION_MS = 180_000; // 3 minutes
@@ -154,6 +154,8 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
     if (!started || paused || !awaitingResponse) return;
 
     const rt = Date.now() - trialStartedAt;
+    if (rt < MIN_RT_MS) return; // Ignore anticipatory responses
+
     awaitingResponse = false;
     cancelTrialTimeout();
 
@@ -177,6 +179,8 @@ export function createVisualSearch(level: number, params: DifficultyParams, soun
     if (!started || paused || !awaitingResponse) return;
 
     const rt = Date.now() - trialStartedAt;
+    if (rt < MIN_RT_MS) return; // Ignore anticipatory responses
+
     awaitingResponse = false;
     cancelTrialTimeout();
 

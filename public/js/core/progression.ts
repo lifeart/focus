@@ -17,6 +17,7 @@ import {
   DAILY_CHALLENGE_TYPES,
   STREAK_FREEZE_MAX,
   STREAK_FREEZE_EARN_INTERVAL,
+  XP_SOURCES,
 } from '../constants.js';
 import { t } from './i18n.js';
 
@@ -31,7 +32,7 @@ export function calculateXP(
   let xp = Math.round(10 + (result.score / 100) * 40);
 
   if (isSessionComplete) xp += 30;
-  if (isStreakDay) xp += 20;
+  if (isStreakDay) xp += XP_SOURCES.streakDay;
   if (result.score >= 95) xp += 25;
 
   return xp;
@@ -504,14 +505,15 @@ export function checkDailyChallengeProgress(
       break;
 
     case 'beat-personal-best': {
-      const prevRecord = progression.personalRecords[result.exerciseId] || 0;
-      // The record may have already been updated; check if result beat the OLD record
-      // We detect this by checking if recordsBroken increased or if result.score > prevRecord
-      if (result.score > prevRecord || result.score === progression.personalRecords[result.exerciseId]) {
-        // Check if the record was actually beaten (prevRecord was > 0 and score exceeds it)
-        // Since personalRecords is already updated by finishExercise, we check if
-        // the stored record equals result.score and there was a previous record
-        if (prevRecord > 0 && result.score > prevRecord) {
+      // personalRecords may already be updated to result.score by finishExercise.
+      // Check if there's an older exercise in history with a lower score for the same exerciseId.
+      const currentRecord = progression.personalRecords[result.exerciseId] || 0;
+      if (currentRecord > 0 && result.score >= currentRecord) {
+        // Look for a previous result with a lower score for this exercise
+        const hasOlderLowerScore = exerciseHistory.some(
+          (ex) => ex.exerciseId === result.exerciseId && ex !== result && ex.score < result.score && ex.score > 0,
+        );
+        if (hasOlderLowerScore) {
           updated.progress = updated.target;
         }
       }

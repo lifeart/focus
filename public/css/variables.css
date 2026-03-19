@@ -161,7 +161,7 @@
   --surface-3: #284d28;
   --text: #d8f3dc;
   --text-secondary: #95d5b2;
-  --text-muted: #7eaa7e;
+  --text-muted: #a0cca0;
   --primary: #2d6a4f;
   --primary-hover: #40916c;
   --primary-active: #1b5e40;
@@ -258,7 +258,7 @@
     --surface-3:      #e8e8f0;
     --text:           #1a1a2e;
     --text-secondary: #5a5a72;
-    --text-muted:     #8888a0;
+    --text-muted:     #6e6e88;
 
     --primary:        #6b4ce6;
     --primary-hover:  #7c5cfc;

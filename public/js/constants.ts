@@ -255,7 +255,7 @@ export const XP_SOURCES = {
   perfectScore: 15,
   sessionComplete: 10,
   dailyGoalMet: 25,
-  streakDay: 5,
+  streakDay: 20,
   recordBroken: 30,
   weeklyChallengeComplete: 50,
   bonusEvent: 10,

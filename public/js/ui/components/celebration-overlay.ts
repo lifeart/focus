@@ -14,12 +14,18 @@ export interface CelebrationData {
     unlockedAvatarLevel: boolean;
   };
   badges: EarnedBadge[];
+  currentLevel?: number;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────
 
-const OVERLAY_TIMEOUT_MS = 4000;
+const OVERLAY_TIMEOUT_EARLY_MS = 2500; // levels 1-10: frequent level-ups
+const OVERLAY_TIMEOUT_LATE_MS = 4000;  // levels 11+: rare level-ups
 const MAX_OVERLAYS = 3;
+
+function getOverlayTimeout(level: number): number {
+  return level <= 10 ? OVERLAY_TIMEOUT_EARLY_MS : OVERLAY_TIMEOUT_LATE_MS;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -104,8 +110,8 @@ function showLevelUpOverlay(
     // Dismiss on click/tap
     disposables.addListener(overlay, 'click', done);
 
-    // Auto-dismiss
-    disposables.setTimeout(done, OVERLAY_TIMEOUT_MS);
+    // Auto-dismiss (shorter for early levels where level-ups are frequent)
+    disposables.setTimeout(done, getOverlayTimeout(data.newLevel));
   });
 }
 
@@ -115,6 +121,7 @@ function showBadgeOverlay(
   badge: EarnedBadge,
   sound: SoundManager,
   disposables: Disposables,
+  level: number,
 ): Promise<void> {
   return new Promise((resolve) => {
     let resolved = false;
@@ -170,8 +177,8 @@ function showBadgeOverlay(
     // Dismiss on click/tap
     disposables.addListener(overlay, 'click', done);
 
-    // Auto-dismiss
-    disposables.setTimeout(done, OVERLAY_TIMEOUT_MS);
+    // Auto-dismiss (shorter for early levels where celebrations are frequent)
+    disposables.setTimeout(done, getOverlayTimeout(level));
   });
 }
 
@@ -183,6 +190,7 @@ export async function showCelebrations(
   disposables: Disposables,
 ): Promise<void> {
   let overlayCount = 0;
+  const level = data.levelUp?.newLevel ?? data.currentLevel ?? 1;
 
   if (data.levelUp && overlayCount < MAX_OVERLAYS) {
     overlayCount++;
@@ -192,6 +200,6 @@ export async function showCelebrations(
   for (const badge of data.badges) {
     if (overlayCount >= MAX_OVERLAYS) break;
     overlayCount++;
-    await showBadgeOverlay(badge, sound, disposables);
+    await showBadgeOverlay(badge, sound, disposables, level);
   }
 }
